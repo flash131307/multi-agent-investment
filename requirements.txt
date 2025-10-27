@@ -1,0 +1,40 @@
+# Core Framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-dotenv>=1.0.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# Multi-Agent System
+langgraph>=0.2.0
+langchain>=0.2.0
+langchain-core>=0.2.0
+
+# Database
+motor>=3.3.0  # Async MongoDB driver
+pymongo>=4.6.0
+chromadb>=0.4.22  # Local vector database
+
+# LLM & Embeddings
+openai>=1.12.0
+
+# Data Sources
+yfinance>=0.2.36
+sec-edgar-downloader>=5.0.0
+requests>=2.31.0
+
+# WebSocket
+websockets>=12.0
+
+# Utilities
+python-dateutil>=2.8.2
+aiohttp>=3.9.0
+
+# Development & Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+httpx>=0.26.0  # For testing async endpoints
+black>=24.0.0
+flake8>=7.0.0
+mypy>=1.8.0

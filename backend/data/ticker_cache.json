@@ -1,0 +1,408 @@
+{
+  "metadata": {
+    "last_updated": "2025-10-27T18:37:48.132823",
+    "version": "1.0",
+    "total_entries": 57
+  },
+  "companies": {
+    "apple": {
+      "ticker": "AAPL",
+      "official_name": "Apple Inc.",
+      "cached_at": "2025-10-26T21:02:05.319294",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "microsoft": {
+      "ticker": "MSFT",
+      "official_name": "Microsoft Corporation",
+      "cached_at": "2025-10-26T21:02:05.319299",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "alphabet inc class a": {
+      "ticker": "GOOGL",
+      "official_name": "Alphabet Inc. Class A",
+      "cached_at": "2025-10-26T21:02:05.319303",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "amazon com": {
+      "ticker": "AMZN",
+      "official_name": "Amazon.com Inc.",
+      "cached_at": "2025-10-26T21:02:05.319305",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "nvidia": {
+      "ticker": "NVDA",
+      "official_name": "NVIDIA Corporation",
+      "cached_at": "2025-10-26T21:02:05.319307",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "meta platforms": {
+      "ticker": "META",
+      "official_name": "Meta Platforms Inc.",
+      "cached_at": "2025-10-26T21:02:05.319309",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "tesla": {
+      "ticker": "TSLA",
+      "official_name": "Tesla Inc.",
+      "cached_at": "2025-10-26T21:02:05.319311",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "jpmorgan chase": {
+      "ticker": "JPM",
+      "official_name": "JPMorgan Chase & Co.",
+      "cached_at": "2025-10-26T21:02:05.319316",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "visa": {
+      "ticker": "V",
+      "official_name": "Visa Inc.",
+      "cached_at": "2025-10-26T21:02:05.319318",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "mastercard incorporated": {
+      "ticker": "MA",
+      "official_name": "Mastercard Incorporated",
+      "cached_at": "2025-10-26T21:02:05.319321",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "bank of america": {
+      "ticker": "BAC",
+      "official_name": "Bank of America Corporation",
+      "cached_at": "2025-10-26T21:02:05.319323",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "johnson johnson": {
+      "ticker": "JNJ",
+      "official_name": "Johnson & Johnson",
+      "cached_at": "2025-10-26T21:02:05.319325",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "unitedhealth group incorporated": {
+      "ticker": "UNH",
+      "official_name": "UnitedHealth Group Incorporated",
+      "cached_at": "2025-10-26T21:02:05.319328",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "pfizer": {
+      "ticker": "PFE",
+      "official_name": "Pfizer Inc.",
+      "cached_at": "2025-10-26T21:02:05.319329",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "walmart": {
+      "ticker": "WMT",
+      "official_name": "Walmart Inc.",
+      "cached_at": "2025-10-26T21:02:05.319331",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "procter gamble": {
+      "ticker": "PG",
+      "official_name": "Procter & Gamble Company",
+      "cached_at": "2025-10-26T21:02:05.319333",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "coca cola": {
+      "ticker": "KO",
+      "official_name": "Coca-Cola Company",
+      "cached_at": "2025-10-26T21:02:05.319336",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "pepsico": {
+      "ticker": "PEP",
+      "official_name": "PepsiCo Inc.",
+      "cached_at": "2025-10-26T21:02:05.319337",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "nike": {
+      "ticker": "NKE",
+      "official_name": "Nike Inc.",
+      "cached_at": "2025-10-26T21:02:05.319339",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "berkshire hathaway": {
+      "ticker": "BRK.B",
+      "official_name": "Berkshire Hathaway Inc.",
+      "cached_at": "2025-10-26T21:02:05.319341",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "exxon mobil": {
+      "ticker": "XOM",
+      "official_name": "Exxon Mobil Corporation",
+      "cached_at": "2025-10-26T21:02:05.319343",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "chevron": {
+      "ticker": "CVX",
+      "official_name": "Chevron Corporation",
+      "cached_at": "2025-10-26T21:02:05.319344",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "home depot": {
+      "ticker": "HD",
+      "official_name": "Home Depot Inc.",
+      "cached_at": "2025-10-26T21:02:05.319346",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "walt disney": {
+      "ticker": "DIS",
+      "official_name": "Walt Disney Company",
+      "cached_at": "2025-10-26T21:02:05.319348",
+      "ttl_days": 90,
+      "source": "sp500"
+    },
+    "google": {
+      "ticker": "GOOGL",
+      "official_name": "Google",
+      "cached_at": "2025-10-26T21:02:07.346266",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "facebook": {
+      "ticker": "META",
+      "official_name": "Facebook",
+      "cached_at": "2025-10-26T21:02:08.810621",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "amazon": {
+      "ticker": "AMZN",
+      "official_name": "Amazon",
+      "cached_at": "2025-10-26T21:02:09.908872",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "meta": {
+      "ticker": "META",
+      "official_name": "Meta",
+      "cached_at": "2025-10-26T21:04:37.471647",
+      "ttl_days": 90,
+      "source": "yfinance"
+    },
+    "alphabet": {
+      "ticker": "GOOGL",
+      "official_name": "Alphabet",
+      "cached_at": "2025-10-26T21:04:40.383178",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the current price of apple": {
+      "ticker": "AAPL",
+      "official_name": "the current price of Apple?",
+      "cached_at": "2025-10-26T21:05:53.846565",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze sentiment for facebook": {
+      "ticker": "META",
+      "official_name": "Analyze sentiment for Facebook",
+      "cached_at": "2025-10-26T21:05:56.426268",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "compare microsoft": {
+      "ticker": "MSFT",
+      "official_name": "Compare Microsoft",
+      "cached_at": "2025-10-26T21:05:59.481555",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "give me research on tesla": {
+      "ticker": "TSLA",
+      "official_name": "Give me research on Tesla",
+      "cached_at": "2025-10-26T21:06:03.313667",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "aapl performing": {
+      "ticker": "AAPL",
+      "official_name": "AAPL performing?",
+      "cached_at": "2025-10-26T21:06:06.323007",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "meta earnings report": {
+      "ticker": "META",
+      "official_name": "Meta earnings report",
+      "cached_at": "2025-10-26T21:06:09.793287",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "alphabet financial performance": {
+      "ticker": "GOOGL",
+      "official_name": "Alphabet financial performance",
+      "cached_at": "2025-10-26T21:06:13.235706",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "what s the current price of aapl": {
+      "ticker": "AAPL",
+      "official_name": "What's the current price of AAPL?",
+      "cached_at": "2025-10-26T21:06:30.390041",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze sentiment for tsla": {
+      "ticker": "TSLA",
+      "official_name": "Analyze sentiment for TSLA",
+      "cached_at": "2025-10-26T21:06:49.334330",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "give me a full research report on msft": {
+      "ticker": "MSFT",
+      "official_name": "Give me a full research report on MSFT",
+      "cached_at": "2025-10-26T21:07:04.453609",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "give me a research report on aapl": {
+      "ticker": "AAPL",
+      "official_name": "Give me a research report on AAPL",
+      "cached_at": "2025-10-26T21:40:16.551591",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "outlook for tesla": {
+      "ticker": "TSLA",
+      "official_name": "outlook for Tesla?",
+      "cached_at": "2025-10-26T21:40:31.854664",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze google": {
+      "ticker": "GOOGL",
+      "official_name": "Analyze Google",
+      "cached_at": "2025-10-26T21:40:47.782432",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze google stock for me": {
+      "ticker": "GOOGL",
+      "official_name": "Analyze Google stock for me",
+      "cached_at": "2025-10-26T21:40:49.023958",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the analyst consensus for nvda": {
+      "ticker": "NVDA",
+      "official_name": "the analyst consensus for NVDA?",
+      "cached_at": "2025-10-26T23:41:13.148061",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in apple give me a complete analysis": {
+      "ticker": "AAPL",
+      "official_name": "Should I invest in Apple? Give me a complete analysis.",
+      "cached_at": "2025-10-26T23:42:08.255275",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in microsoft give me a comprehensive analysis": {
+      "ticker": "MSFT",
+      "official_name": "Should I invest in Microsoft? Give me a comprehensive analysis.",
+      "cached_at": "2025-10-27T02:10:35.221303",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in aapl compare it to its sector peers": {
+      "ticker": "AAPL",
+      "official_name": "Should I invest in AAPL? Compare it to its sector peers.",
+      "cached_at": "2025-10-27T02:32:38.485298",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "jnj valued compared to its peers": {
+      "ticker": "JNJ",
+      "official_name": "JNJ valued compared to its peers?",
+      "cached_at": "2025-10-27T02:32:54.390144",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in msft give me a comprehensive analysis including peer comparison": {
+      "ticker": "MSFT",
+      "official_name": "Should I invest in MSFT? Give me a comprehensive analysis including peer comparison.",
+      "cached_at": "2025-10-27T02:34:37.481121",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the investment outlook for microsoft": {
+      "ticker": "MSFT",
+      "official_name": "the investment outlook for Microsoft?",
+      "cached_at": "2025-10-27T03:44:14.527747",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u5206\u6790\u7279\u65af\u62c9\u7684\u6295\u8d44\u524d\u666f": {
+      "ticker": "TSLA",
+      "official_name": "\u5206\u6790\u7279\u65af\u62c9\u7684\u6295\u8d44\u524d\u666f",
+      "cached_at": "2025-10-27T04:17:49.781857",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in nvidia stock": {
+      "ticker": "NVDA",
+      "official_name": "Should I invest in NVIDIA stock?",
+      "cached_at": "2025-10-27T04:58:19.649147",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "compare tesla": {
+      "ticker": "TSLA",
+      "official_name": "Compare Tesla",
+      "cached_at": "2025-10-27T05:00:20.334277",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze apple": {
+      "ticker": "AAPL",
+      "official_name": "Analyze Apple",
+      "cached_at": "2025-10-27T05:02:23.670513",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze apple s recent performance": {
+      "ticker": "AAPL",
+      "official_name": "Analyze Apple's recent performance",
+      "cached_at": "2025-10-27T05:02:24.597375",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "uber": {
+      "ticker": "UBER",
+      "official_name": "Uber",
+      "cached_at": "2025-10-27T18:37:46.712814",
+      "ttl_days": 90,
+      "source": "yfinance"
+    },
+    "should i invest in uber stock": {
+      "ticker": "UBER",
+      "official_name": "Should I invest in Uber stock?",
+      "cached_at": "2025-10-27T18:37:48.132570",
+      "ttl_days": 90,
+      "source": "llm"
+    }
+  }
+}

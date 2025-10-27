@@ -1,0 +1,23 @@
+[
+  {
+    "ticker": "AAPL",
+    "query": "Give me a research report on AAPL",
+    "report": "No report generated",
+    "execution_time": 14.59,
+    "agents_executed": "unknown"
+  },
+  {
+    "ticker": "TSLA",
+    "query": "What's the current stock price and outlook for Tesla?",
+    "report": "No report generated",
+    "execution_time": 16.74,
+    "agents_executed": "unknown"
+  },
+  {
+    "ticker": "GOOGL",
+    "query": "Analyze Google stock for me",
+    "report": "No report generated",
+    "execution_time": 14.11,
+    "agents_executed": "unknown"
+  }
+]
