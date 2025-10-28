@@ -13,6 +13,7 @@ from backend.agents.router_agent import router_agent
 from backend.agents.market_data_agent import market_data_agent
 from backend.agents.sentiment_agent import sentiment_agent
 from backend.agents.forward_looking_agent import forward_looking_agent
+from backend.agents.visualization_agent import visualization_agent
 from backend.agents.report_agent import report_agent
 from backend.rag.pipeline import rag_pipeline
 from backend.memory.conversation import conversation_memory
@@ -188,6 +189,9 @@ def route_to_agents(state: AgentState) -> list[Send]:
             sends.append(Send("forward_looking", state))
             sent_to.add("forward_looking")
 
+    # NOTE: visualization is NOT in parallel execution
+    # It runs after aggregator to access peer_valuation data from market_data_agent
+
     # If no specific agents selected, default to market_data + sentiment (but only once each)
     if state.get("tickers") and len(sent_to) <= 2:  # Only RAG + forward_looking or less
         if "market_data" not in sent_to:
@@ -206,7 +210,7 @@ def aggregate_results(state: AgentState) -> AgentState:
     """
     Aggregates results from parallel agent execution.
 
-    This node collects all outputs before sending to report generator.
+    This node collects all outputs before sending to visualization and report generator.
 
     Args:
         state: State with partial results from parallel agents
@@ -221,10 +225,12 @@ def aggregate_results(state: AgentState) -> AgentState:
     has_sentiment = state.get("sentiment_analysis") is not None
     has_context = state.get("retrieved_context") is not None
     has_analyst = state.get("analyst_consensus") is not None
+    has_peer = state.get("peer_valuation") is not None
 
     logger.info(
         f"Results: market_data={has_market}, "
-        f"sentiment={has_sentiment}, analyst_consensus={has_analyst}, context={has_context}"
+        f"sentiment={has_sentiment}, analyst_consensus={has_analyst}, "
+        f"context={has_context}, peer_valuation={has_peer}"
     )
 
     return {}  # No state updates, just a synchronization point
@@ -244,9 +250,11 @@ def create_research_graph():
           ↓
         router
           ↓
-        [parallel: market_data, sentiment, rag_retrieval]
+        [parallel: market_data, sentiment, forward_looking, rag_retrieval]
           ↓
         aggregator
+          ↓
+        visualization (sequential - needs peer_valuation from market_data)
           ↓
         report
           ↓
@@ -266,6 +274,7 @@ def create_research_graph():
     workflow.add_node("market_data", market_data_agent)
     workflow.add_node("sentiment", sentiment_agent)
     workflow.add_node("forward_looking", forward_looking_agent)
+    workflow.add_node("visualization", visualization_agent)
     workflow.add_node("rag_retrieval", rag_retrieval)
     workflow.add_node("aggregator", aggregate_results)
     workflow.add_node("report", report_agent)
@@ -275,7 +284,7 @@ def create_research_graph():
     workflow.add_edge(START, "memory_loader")
     workflow.add_edge("memory_loader", "router")
 
-    # Conditional parallel routing
+    # Conditional parallel routing (visualization is NOT included here)
     workflow.add_conditional_edges(
         "router",
         route_to_agents,
@@ -288,8 +297,9 @@ def create_research_graph():
     workflow.add_edge("forward_looking", "aggregator")
     workflow.add_edge("rag_retrieval", "aggregator")
 
-    # Linear flow after aggregation
-    workflow.add_edge("aggregator", "report")
+    # Sequential flow after aggregation
+    workflow.add_edge("aggregator", "visualization")
+    workflow.add_edge("visualization", "report")
     workflow.add_edge("report", "memory_saver")
     workflow.add_edge("memory_saver", END)
 

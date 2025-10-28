@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # API Keys
     openai_api_key: str
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-4o"
     openai_embedding_model: str = "text-embedding-3-small"
     news_api_key: Optional[str] = None
     yahoo_finance_api_key: Optional[str] = None

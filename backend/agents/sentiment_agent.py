@@ -189,7 +189,7 @@ Respond in JSON format:
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are an expert financial analyst. Analyze news sentiment objectively and respond with valid JSON."},
+                    {"role": "system", "content": "You are an expert financial analyst. Analyze news sentiment objectively and respond with valid JSON. Respond in the same language as the user's query (English or Chinese)."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,

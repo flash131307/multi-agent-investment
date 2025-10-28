@@ -56,9 +56,19 @@ class ReportAgent(BaseAgent):
             context=context
         )
 
-        # Return only the field we're updating
+        # Generate snapshot for beginner investors
+        snapshot = await self._generate_snapshot(
+            tickers=tickers,
+            market_data=market_data,
+            sentiment=sentiment,
+            analyst_consensus=analyst_consensus,
+            peer_valuation=peer_valuation
+        )
+
+        # Return both report and snapshot
         return {
-            "report": report
+            "report": report,
+            "snapshot": snapshot
         }
 
     async def _generate_report(
@@ -155,7 +165,7 @@ Be objective and data-driven. If information is missing, acknowledge it.
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert investment research analyst. Create clear, professional, and data-driven reports."
+                        "content": "You are an expert investment research analyst. Create clear, professional, and data-driven reports. IMPORTANT: Respond in the same language as the user's query. If the user asks in Chinese, respond in Chinese. If in English, respond in English."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -375,6 +385,124 @@ Be objective and data-driven. If information is missing, acknowledge it.
             sections.append(section)
 
         return "\n\n".join(sections)
+
+    async def _generate_snapshot(
+        self,
+        tickers: list,
+        market_data: list,
+        sentiment: list,
+        analyst_consensus: list,
+        peer_valuation: list
+    ) -> dict:
+        """
+        Generate simplified investor snapshot for beginners.
+
+        Args:
+            tickers: List of tickers
+            market_data: Market data from MarketDataAgent
+            sentiment: Sentiment analysis from SentimentAgent
+            analyst_consensus: Analyst consensus from ForwardLookingAgent
+            peer_valuation: Peer valuation comparison from MarketDataAgent
+
+        Returns:
+            InvestorSnapshot dict or None if not enough data
+        """
+        # Need at least one ticker and market data
+        if not tickers or not market_data:
+            self.logger.warning("Insufficient data to generate snapshot")
+            return None
+
+        # Use first ticker (primary analysis target)
+        ticker = tickers[0]
+        primary_market_data = next((m for m in market_data if m.get("ticker") == ticker), None)
+
+        if not primary_market_data:
+            return None
+
+        # Extract core metrics
+        current_price = primary_market_data.get("current_price")
+        price_change_pct = primary_market_data.get("change_percent")
+        market_cap = primary_market_data.get("market_cap")
+        pe_ratio = primary_market_data.get("pe_ratio")
+
+        # Format data for LLM
+        pe_str = f"{pe_ratio:.2f}" if pe_ratio else "N/A"
+        market_summary = f"""
+Ticker: {ticker}
+Current Price: ${current_price:.2f}
+Price Change: {price_change_pct:+.2f}%
+Market Cap: ${market_cap / 1e9:.2f}B
+P/E Ratio: {pe_str}
+"""
+
+        # Add sentiment if available
+        primary_sentiment = next((s for s in sentiment if s.get("ticker") == ticker), None) if sentiment else None
+        sentiment_summary = ""
+        if primary_sentiment:
+            sentiment_summary = f"\nSentiment: {primary_sentiment.get('overall_sentiment', 'neutral').upper()} ({primary_sentiment.get('confidence', 0):.0%} confidence)"
+
+        # Add analyst consensus if available
+        primary_consensus = next((a for a in analyst_consensus if a.get("ticker") == ticker), None) if analyst_consensus else None
+        analyst_summary = ""
+        if primary_consensus:
+            target = primary_consensus.get("target_price_mean")
+            upside = primary_consensus.get("upside_potential")
+            rec = primary_consensus.get("recommendation", "hold")
+            if target:
+                analyst_summary = f"\nAnalyst Target: ${target:.2f} ({upside:+.1f}% potential)\nRecommendation: {rec.upper()}"
+
+        # Create prompt for snapshot generation
+        prompt = f"""Based on this investment data for {ticker}, generate a beginner-friendly snapshot in JSON format:
+
+{market_summary}{sentiment_summary}{analyst_summary}
+
+Generate ONLY a valid JSON object with this exact structure:
+{{
+  "ticker": "{ticker}",
+  "current_price": {current_price},
+  "price_change_pct": {price_change_pct},
+  "market_cap": {market_cap},
+  "pe_ratio": {pe_ratio if pe_ratio else 'null'},
+  "investment_rating": "one of: strong_buy, buy, hold, sell, strong_sell",
+  "rating_explanation": "1-2 sentence explanation in simple terms",
+  "key_highlights": ["highlight 1", "highlight 2", "highlight 3"],
+  "risk_warnings": ["risk 1", "risk 2"]
+}}
+
+Guidelines:
+- investment_rating: Based on price momentum, valuation, sentiment, and analyst views
+- rating_explanation: WHY this rating in simple language
+- key_highlights: 3-5 positive facts (growth, strengths, opportunities)
+- risk_warnings: 2-3 main risks (valuation concerns, market risks, business challenges)
+- Use simple language for beginners, avoid jargon
+- Be objective and balanced
+
+Return ONLY the JSON object, no other text."""
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial advisor helping beginner investors. Generate clear, simple snapshots in JSON format. Be concise and avoid technical jargon."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.5,
+                max_tokens=600,
+                response_format={"type": "json_object"}
+            )
+
+            import json
+            snapshot_data = json.loads(response.choices[0].message.content.strip())
+
+            self.logger.info(f"✅ Snapshot generated successfully for {ticker}")
+            return snapshot_data
+
+        except Exception as e:
+            self.logger.error(f"Failed to generate snapshot: {str(e)}")
+            return None
 
     def _generate_fallback_report(
         self,

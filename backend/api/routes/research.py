@@ -97,6 +97,8 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
         sentiment = final_state.get("sentiment_analysis")
         analyst_consensus = final_state.get("analyst_consensus")
         context = final_state.get("retrieved_context", [])
+        visualization_data = final_state.get("visualization_data", [])
+        snapshot = final_state.get("snapshot")
 
         # Check if report was generated
         if not report:
@@ -115,7 +117,9 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
             market_data_available=market_data is not None,
             sentiment_available=sentiment is not None,
             analyst_consensus_available=analyst_consensus is not None,
-            context_retrieved=len(context)
+            context_retrieved=len(context),
+            visualization_data=visualization_data or [],
+            snapshot=snapshot
         )
 
         logger.info(

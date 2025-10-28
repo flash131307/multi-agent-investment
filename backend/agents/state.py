@@ -86,6 +86,51 @@ class RetrievedContext(TypedDict):
     metadata: Dict[str, Any]
 
 
+class PricePoint(TypedDict):
+    """Single price data point for visualization."""
+    date: str  # ISO format date
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: int
+
+
+class VisualizationData(TypedDict):
+    """Structured data for frontend visualization."""
+    ticker: str
+    # Historical price data (1 year daily)
+    price_history: List[PricePoint]
+    # 52-week range visualization
+    week_52_high: Optional[float]
+    week_52_low: Optional[float]
+    current_price: Optional[float]
+    current_position_pct: Optional[float]  # Position in 52-week range (0-100%)
+    # Peer comparison data
+    peer_comparison: List[Dict[str, Any]]  # [{ticker, pe_ratio, pb_ratio, ps_ratio}, ...]
+    # Summary stats
+    period_high: Optional[float]
+    period_low: Optional[float]
+    average_volume: Optional[int]
+
+
+class InvestorSnapshot(TypedDict):
+    """Simplified snapshot for beginner investors."""
+    ticker: str
+    # Core metrics
+    current_price: Optional[float]
+    price_change_pct: Optional[float]
+    market_cap: Optional[int]
+    pe_ratio: Optional[float]
+    # AI-generated investment recommendation
+    investment_rating: Literal["strong_buy", "buy", "hold", "sell", "strong_sell"]
+    rating_explanation: str  # Short explanation (1-2 sentences)
+    # Key highlights (3-5 points)
+    key_highlights: List[str]  # ["Highlight 1", "Highlight 2", ...]
+    # Risk warnings (2-3 points)
+    risk_warnings: List[str]  # ["Risk 1", "Risk 2", ...]
+
+
 class AgentState(TypedDict):
     """
     Complete state for multi-agent workflow.
@@ -120,9 +165,11 @@ class AgentState(TypedDict):
     retrieved_context: Annotated[List[RetrievedContext], operator.add]
     analyst_consensus: Annotated[List[AnalystConsensus], operator.add]
     peer_valuation: Annotated[List[PeerValuation], operator.add]
+    visualization_data: Annotated[List[VisualizationData], operator.add]
 
     # Final output
     report: Optional[str]
+    snapshot: Optional[InvestorSnapshot]  # Simplified snapshot for beginners
 
     # Error handling (use Annotated to merge errors from multiple agents)
     errors: Annotated[List[str], operator.add]
@@ -169,9 +216,11 @@ def create_initial_state(
         retrieved_context=[],
         analyst_consensus=[],
         peer_valuation=[],
+        visualization_data=[],
 
         # Final output
         report=None,
+        snapshot=None,
 
         # Error handling
         errors=[],

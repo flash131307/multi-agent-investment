@@ -8,9 +8,13 @@ interface QueryInputProps {
 
 const EXAMPLE_QUERIES = [
   "What is the investment outlook for Microsoft?",
+  "微软的投资前景如何？",
   "Analyze Apple's recent performance and valuation",
+  "分析苹果公司最近的表现和估值",
   "Compare Tesla and traditional automakers",
+  "比较特斯拉和传统汽车制造商",
   "Should I invest in NVIDIA stock?",
+  "我应该投资英伟达股票吗？",
 ];
 
 export default function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
@@ -37,7 +41,7 @@ export default function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask about any stock or company... (e.g., 'What is the investment outlook for Microsoft?')"
+            placeholder="Ask about any stock or company... / 询问任何股票或公司... (e.g., 'What is the investment outlook for Microsoft?' 或 '微软的投资前景如何？')"
             className="w-full h-32 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent resize-none transition-all"
             disabled={isLoading}
           />
@@ -73,7 +77,7 @@ export default function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
             <Sparkles className="w-4 h-4" />
             <span>Example queries:</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             {EXAMPLE_QUERIES.map((example, index) => (
               <button
                 key={index}

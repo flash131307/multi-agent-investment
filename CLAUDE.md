@@ -101,22 +101,13 @@ python -m backend.scripts.init_db
 
 **Add API**: Define route in `backend/api/routes/` → Pydantic models → Test
 
+**Add Visualization**: Create agent in `backend/agents/` → Return chart data JSON → Build React chart component → Integrate to ReportDisplay
+
 **Ticker Cache**: `python -m backend.scripts.init_ticker_cache` (auto-grows, 90d TTL)
+
+---
+
 
 ## Current Status
 
-**Phase**: 5/8 (86% complete)
-**Quality**: A+ (100/100)
-
-**Completed**:
-- ✅ Phase 1-4: Setup, Database, RAG, Agents
-- ✅ Sentiment Analysis (80% confidence)
-- ✅ EDGAR Integration (100% coverage)
-- ✅ Dynamic Ticker Resolver (unlimited companies)
-- ✅ 52-Week Trend Analysis (position tracking, momentum signals)
-- ✅ Analyst Consensus (price targets, upside/downside, recommendations)
-- ✅ Peer Valuation Comparison (11 sectors, premium/discount calculations)
-
-**Next**: REST API Endpoints (Phase 5 Task 6)
-
-See [PLAN.md](./PLAN.md) for detailed tasks.
+See **[PLAN.md](./PLAN.md)** for current phase, tasks, and progress tracking.

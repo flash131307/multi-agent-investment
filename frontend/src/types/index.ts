@@ -3,6 +3,49 @@ export interface ResearchQueryRequest {
   session_id?: string;
 }
 
+export interface PricePoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface PeerComparison {
+  ticker: string;
+  name: string;
+  pe_ratio: number | null;
+  pb_ratio: number | null;
+  ps_ratio: number | null;
+  is_main: boolean;
+}
+
+export interface VisualizationData {
+  ticker: string;
+  price_history: PricePoint[];
+  week_52_high: number | null;
+  week_52_low: number | null;
+  current_price: number | null;
+  current_position_pct: number | null;
+  peer_comparison: PeerComparison[];
+  period_high: number | null;
+  period_low: number | null;
+  average_volume: number | null;
+}
+
+export interface InvestorSnapshot {
+  ticker: string;
+  current_price: number | null;
+  price_change_pct: number | null;
+  market_cap: number | null;
+  pe_ratio: number | null;
+  investment_rating: 'strong_buy' | 'buy' | 'hold' | 'sell' | 'strong_sell';
+  rating_explanation: string;
+  key_highlights: string[];
+  risk_warnings: string[];
+}
+
 export interface ResearchQueryResponse {
   session_id: string;
   query: string;
@@ -12,6 +55,8 @@ export interface ResearchQueryResponse {
   sentiment_available: boolean;
   analyst_consensus_available: boolean;
   context_retrieved: number;
+  visualization_data: VisualizationData[];
+  snapshot: InvestorSnapshot | null;
   timestamp: string;
 }
 

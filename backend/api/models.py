@@ -7,6 +7,75 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
+# ============= Visualization Data Models =============
+
+class PricePointModel(BaseModel):
+    """Single price data point for visualization."""
+    date: str = Field(..., description="Date in ISO format")
+    open: float = Field(..., description="Opening price")
+    high: float = Field(..., description="High price")
+    low: float = Field(..., description="Low price")
+    close: float = Field(..., description="Closing price")
+    volume: int = Field(..., description="Trading volume")
+
+
+class PeerComparisonModel(BaseModel):
+    """Peer comparison data point."""
+    ticker: str = Field(..., description="Ticker symbol or label")
+    name: str = Field(..., description="Company or category name")
+    pe_ratio: Optional[float] = Field(None, description="P/E ratio")
+    pb_ratio: Optional[float] = Field(None, description="Price/Book ratio")
+    ps_ratio: Optional[float] = Field(None, description="Price/Sales ratio")
+    is_main: bool = Field(False, description="Whether this is the main ticker being analyzed")
+
+
+class VisualizationDataModel(BaseModel):
+    """Structured data for frontend charts and visualizations."""
+    ticker: str = Field(..., description="Stock ticker")
+    price_history: List[PricePointModel] = Field(
+        default_factory=list,
+        description="Historical price data (1 year daily)"
+    )
+    week_52_high: Optional[float] = Field(None, description="52-week high price")
+    week_52_low: Optional[float] = Field(None, description="52-week low price")
+    current_price: Optional[float] = Field(None, description="Current price")
+    current_position_pct: Optional[float] = Field(
+        None,
+        description="Current position in 52-week range (0-100%)"
+    )
+    peer_comparison: List[PeerComparisonModel] = Field(
+        default_factory=list,
+        description="Peer valuation comparison data"
+    )
+    period_high: Optional[float] = Field(None, description="Highest price in period")
+    period_low: Optional[float] = Field(None, description="Lowest price in period")
+    average_volume: Optional[int] = Field(None, description="Average trading volume")
+
+
+# ============= Investor Snapshot Models =============
+
+class InvestorSnapshotModel(BaseModel):
+    """Simplified investor snapshot for beginners."""
+    ticker: str = Field(..., description="Stock ticker")
+    current_price: Optional[float] = Field(None, description="Current stock price")
+    price_change_pct: Optional[float] = Field(None, description="Price change percentage")
+    market_cap: Optional[int] = Field(None, description="Market capitalization")
+    pe_ratio: Optional[float] = Field(None, description="Price-to-Earnings ratio")
+    investment_rating: str = Field(
+        ...,
+        description="Investment recommendation (strong_buy, buy, hold, sell, strong_sell)"
+    )
+    rating_explanation: str = Field(..., description="Brief explanation of the rating")
+    key_highlights: List[str] = Field(
+        default_factory=list,
+        description="Key positive highlights (3-5 points)"
+    )
+    risk_warnings: List[str] = Field(
+        default_factory=list,
+        description="Main risk warnings (2-3 points)"
+    )
+
+
 # ============= Research Query Models =============
 
 class ResearchQueryRequest(BaseModel):
@@ -74,6 +143,16 @@ class ResearchQueryResponse(BaseModel):
         ge=0
     )
 
+    visualization_data: List[VisualizationDataModel] = Field(
+        default_factory=list,
+        description="Structured data for charts and visualizations"
+    )
+
+    snapshot: Optional[InvestorSnapshotModel] = Field(
+        None,
+        description="Simplified investor snapshot for beginners"
+    )
+
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="Timestamp when the report was generated"
@@ -90,6 +169,20 @@ class ResearchQueryResponse(BaseModel):
                 "sentiment_available": True,
                 "analyst_consensus_available": True,
                 "context_retrieved": 5,
+                "visualization_data": [
+                    {
+                        "ticker": "AAPL",
+                        "price_history": [],
+                        "week_52_high": 199.62,
+                        "week_52_low": 164.08,
+                        "current_price": 189.50,
+                        "current_position_pct": 71.5,
+                        "peer_comparison": [],
+                        "period_high": 199.62,
+                        "period_low": 164.08,
+                        "average_volume": 52000000
+                    }
+                ],
                 "timestamp": "2025-10-26T12:00:00Z"
             }
         }

@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "last_updated": "2025-10-27T18:37:48.132823",
+    "last_updated": "2025-10-28T02:54:02.104136",
     "version": "1.0",
-    "total_entries": 57
+    "total_entries": 72
   },
   "companies": {
     "apple": {
@@ -401,6 +401,111 @@
       "ticker": "UBER",
       "official_name": "Should I invest in Uber stock?",
       "cached_at": "2025-10-27T18:37:48.132570",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "doordash": {
+      "ticker": "DASH",
+      "official_name": "Doordash",
+      "cached_at": "2025-10-27T19:12:57.122658",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in doordash stock": {
+      "ticker": "DASH",
+      "official_name": "Should I invest in Doordash stock?",
+      "cached_at": "2025-10-27T19:12:58.592258",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "uber\u7684\u80a1\u7968\u6700\u8fd1\u8868\u73b0\u600e\u4e48\u6837": {
+      "ticker": "UBER",
+      "official_name": "Uber\u7684\u80a1\u7968\u6700\u8fd1\u8868\u73b0\u600e\u4e48\u6837",
+      "cached_at": "2025-10-27T19:19:13.049664",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u6bd4\u8f83\u7279\u65af\u62c9\u548c\u4f20\u7edf\u6c7d\u8f66\u5236\u9020\u5546": {
+      "ticker": "TSLA",
+      "official_name": "\u6bd4\u8f83\u7279\u65af\u62c9\u548c\u4f20\u7edf\u6c7d\u8f66\u5236\u9020\u5546",
+      "cached_at": "2025-10-27T19:24:38.390947",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "doordash\u7684\u6295\u8d44\u524d\u666f\u600e\u4e48\u6837": {
+      "ticker": "DASH",
+      "official_name": "Doordash\u7684\u6295\u8d44\u524d\u666f\u600e\u4e48\u6837",
+      "cached_at": "2025-10-27T19:38:58.108350",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze tesla": {
+      "ticker": "TSLA",
+      "official_name": "Analyze Tesla",
+      "cached_at": "2025-10-28T00:04:13.344374",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze tesla stock": {
+      "ticker": "TSLA",
+      "official_name": "Analyze Tesla stock",
+      "cached_at": "2025-10-28T00:04:15.149278",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u8c37\u6b4c\u503c\u5f97\u6295\u8d44\u5417": {
+      "ticker": "GOOGL",
+      "official_name": "\u8c37\u6b4c\u503c\u5f97\u6295\u8d44\u5417",
+      "cached_at": "2025-10-28T00:38:18.385136",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u6211\u5e94\u8be5\u6295\u8d44\u82f1\u4f1f\u8fbe\u80a1\u7968\u5417": {
+      "ticker": "NVDA",
+      "official_name": "\u6211\u5e94\u8be5\u6295\u8d44\u82f1\u4f1f\u8fbe\u80a1\u7968\u5417\uff1f",
+      "cached_at": "2025-10-28T01:34:24.242227",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze apple stock": {
+      "ticker": "AAPL",
+      "official_name": "Analyze Apple stock",
+      "cached_at": "2025-10-28T02:22:31.027211",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze microsoft": {
+      "ticker": "MSFT",
+      "official_name": "Analyze Microsoft",
+      "cached_at": "2025-10-28T02:23:42.435313",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze microsoft stock": {
+      "ticker": "MSFT",
+      "official_name": "Analyze Microsoft stock",
+      "cached_at": "2025-10-28T02:23:44.318209",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze amazon": {
+      "ticker": "AMZN",
+      "official_name": "Analyze Amazon",
+      "cached_at": "2025-10-28T02:26:18.357545",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze amazon stock": {
+      "ticker": "AMZN",
+      "official_name": "Analyze Amazon stock",
+      "cached_at": "2025-10-28T02:26:19.211261",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u5206\u6790\u82f9\u679c\u516c\u53f8\u6700\u8fd1\u7684\u8868\u73b0\u548c\u4f30\u503c": {
+      "ticker": "AAPL",
+      "official_name": "\u5206\u6790\u82f9\u679c\u516c\u53f8\u6700\u8fd1\u7684\u8868\u73b0\u548c\u4f30\u503c",
+      "cached_at": "2025-10-28T02:54:02.103875",
       "ttl_days": 90,
       "source": "llm"
     }
