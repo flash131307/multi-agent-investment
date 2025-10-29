@@ -131,6 +131,15 @@ class InvestorSnapshot(TypedDict):
     risk_warnings: List[str]  # ["Risk 1", "Risk 2", ...]
 
 
+class ReportMetadata(TypedDict):
+    """Metadata about report generation and agent execution."""
+    executed_agents: List[str]  # Which agents ran
+    data_sources: Dict[str, bool]  # Which data sources have data
+    intent: str  # Query intent
+    tickers: List[str]  # Tickers analyzed
+    report_template: str  # Which template was used
+
+
 class AgentState(TypedDict):
     """
     Complete state for multi-agent workflow.
@@ -159,6 +168,10 @@ class AgentState(TypedDict):
     should_analyze_sentiment: bool
     should_retrieve_context: bool
 
+    # Execution tracking
+    executed_agents: Annotated[List[str], operator.add]  # Track which agents ran
+    agent_errors: Dict[str, str]  # Track agent-specific errors {agent_name: error_message}
+
     # Agent outputs (can be set by parallel agents - use Annotated to merge lists)
     market_data: Annotated[List[MarketData], operator.add]
     sentiment_analysis: Annotated[List[SentimentAnalysis], operator.add]
@@ -170,6 +183,7 @@ class AgentState(TypedDict):
     # Final output
     report: Optional[str]
     snapshot: Optional[InvestorSnapshot]  # Simplified snapshot for beginners
+    report_metadata: Optional[ReportMetadata]  # Report generation metadata
 
     # Error handling (use Annotated to merge errors from multiple agents)
     errors: Annotated[List[str], operator.add]
@@ -210,6 +224,10 @@ def create_initial_state(
         should_analyze_sentiment=False,
         should_retrieve_context=False,
 
+        # Execution tracking
+        executed_agents=[],
+        agent_errors={},
+
         # Agent outputs (initially empty lists for parallel merge)
         market_data=[],
         sentiment_analysis=[],
@@ -221,6 +239,7 @@ def create_initial_state(
         # Final output
         report=None,
         snapshot=None,
+        report_metadata=None,
 
         # Error handling
         errors=[],

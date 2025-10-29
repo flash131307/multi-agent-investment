@@ -46,17 +46,34 @@ export interface InvestorSnapshot {
   risk_warnings: string[];
 }
 
+export interface ReportMetadata {
+  executed_agents: string[];  // Which agents executed
+  data_sources: Record<string, boolean>;  // Which data sources have data
+  intent: string;  // Query intent
+  tickers: string[];  // Tickers analyzed
+  report_template: string;  // Which template was used
+}
+
 export interface ResearchQueryResponse {
   session_id: string;
   query: string;
   report: string;
   tickers: string[];
+  executed_agents: string[];  // List of agents that were executed
+  agent_errors: Record<string, string>;  // Per-agent error messages
+  intent?: string;  // Detected query intent
+  routing_flags?: {  // Router's flag decisions
+    market_data: boolean;
+    sentiment: boolean;
+    context: boolean;
+  };
   market_data_available: boolean;
   sentiment_available: boolean;
   analyst_consensus_available: boolean;
   context_retrieved: number;
   visualization_data: VisualizationData[];
   snapshot: InvestorSnapshot | null;
+  report_metadata: ReportMetadata | null;  // Report generation metadata
   timestamp: string;
 }
 

@@ -54,6 +54,24 @@ class VisualizationDataModel(BaseModel):
 
 # ============= Investor Snapshot Models =============
 
+class ReportMetadataModel(BaseModel):
+    """Metadata about report generation and agent execution."""
+    executed_agents: List[str] = Field(
+        default_factory=list,
+        description="List of agents that executed"
+    )
+    data_sources: Dict[str, bool] = Field(
+        default_factory=dict,
+        description="Which data sources have data available"
+    )
+    intent: str = Field(..., description="Query intent")
+    tickers: List[str] = Field(
+        default_factory=list,
+        description="Tickers analyzed"
+    )
+    report_template: str = Field(..., description="Which report template was used")
+
+
 class InvestorSnapshotModel(BaseModel):
     """Simplified investor snapshot for beginners."""
     ticker: str = Field(..., description="Stock ticker")
@@ -122,19 +140,46 @@ class ResearchQueryResponse(BaseModel):
         examples=[["AAPL", "MSFT"]]
     )
 
+    # Execution tracking
+    executed_agents: List[str] = Field(
+        default_factory=list,
+        description="List of agents that were executed",
+        examples=[["router", "market_data", "sentiment", "rag_retrieval"]]
+    )
+
+    agent_errors: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Per-agent error messages if any occurred",
+        examples=[{"market_data": "Failed to fetch data from Yahoo Finance"}]
+    )
+
+    # Routing decision (from router agent)
+    intent: Optional[str] = Field(
+        None,
+        description="Detected query intent (price_query, fundamental_analysis, sentiment_analysis, general_research, comparison)",
+        examples=["price_query"]
+    )
+
+    routing_flags: Optional[Dict[str, bool]] = Field(
+        None,
+        description="Router's flag decisions for agent execution",
+        examples=[{"market_data": True, "sentiment": False, "context": False}]
+    )
+
+    # Data availability flags (True if data was successfully retrieved)
     market_data_available: bool = Field(
         ...,
-        description="Whether market data was retrieved"
+        description="Whether market data was successfully retrieved"
     )
 
     sentiment_available: bool = Field(
         ...,
-        description="Whether sentiment analysis was performed"
+        description="Whether sentiment analysis was successfully performed"
     )
 
     analyst_consensus_available: bool = Field(
         ...,
-        description="Whether analyst consensus data was retrieved"
+        description="Whether analyst consensus data was successfully retrieved"
     )
 
     context_retrieved: int = Field(
@@ -151,6 +196,11 @@ class ResearchQueryResponse(BaseModel):
     snapshot: Optional[InvestorSnapshotModel] = Field(
         None,
         description="Simplified investor snapshot for beginners"
+    )
+
+    report_metadata: Optional[ReportMetadataModel] = Field(
+        None,
+        description="Metadata about report generation for debugging and frontend"
     )
 
     timestamp: datetime = Field(

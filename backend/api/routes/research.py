@@ -93,12 +93,25 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
         # Extract data from final state
         report = final_state.get("report", "")
         tickers = final_state.get("tickers", [])
-        market_data = final_state.get("market_data")
-        sentiment = final_state.get("sentiment_analysis")
-        analyst_consensus = final_state.get("analyst_consensus")
+        market_data = final_state.get("market_data", [])
+        sentiment = final_state.get("sentiment_analysis", [])
+        analyst_consensus = final_state.get("analyst_consensus", [])
         context = final_state.get("retrieved_context", [])
         visualization_data = final_state.get("visualization_data", [])
         snapshot = final_state.get("snapshot")
+        report_metadata = final_state.get("report_metadata")
+
+        # Extract execution tracking
+        executed_agents = final_state.get("executed_agents", [])
+        agent_errors = final_state.get("agent_errors", {})
+
+        # Extract routing decision
+        intent = final_state.get("intent")
+        routing_flags = {
+            "market_data": final_state.get("should_fetch_market_data", False),
+            "sentiment": final_state.get("should_analyze_sentiment", False),
+            "context": final_state.get("should_retrieve_context", False)
+        }
 
         # Check if report was generated
         if not report:
@@ -108,18 +121,35 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
                 detail="Failed to generate research report"
             )
 
+        # Calculate data availability: data exists AND agent succeeded (no error)
+        # market_data agent also populates peer_valuation, so check both
+        market_data_available = (
+            len(market_data) > 0 and "market_data" not in agent_errors
+        )
+        sentiment_available = (
+            len(sentiment) > 0 and "sentiment" not in agent_errors
+        )
+        analyst_consensus_available = (
+            len(analyst_consensus) > 0 and "forward_looking" not in agent_errors
+        )
+
         # Build response
         response = ResearchQueryResponse(
             session_id=session_id,
             query=request.query,
             report=report,
             tickers=tickers,
-            market_data_available=market_data is not None,
-            sentiment_available=sentiment is not None,
-            analyst_consensus_available=analyst_consensus is not None,
+            executed_agents=executed_agents,
+            agent_errors=agent_errors,
+            intent=intent,
+            routing_flags=routing_flags,
+            market_data_available=market_data_available,
+            sentiment_available=sentiment_available,
+            analyst_consensus_available=analyst_consensus_available,
             context_retrieved=len(context),
             visualization_data=visualization_data or [],
-            snapshot=snapshot
+            snapshot=snapshot,
+            report_metadata=report_metadata
         )
 
         logger.info(

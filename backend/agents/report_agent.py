@@ -30,7 +30,7 @@ class ReportAgent(BaseAgent):
             state: Current agent state with all data collected
 
         Returns:
-            State with final report
+            State with final report and metadata
         """
         # Extract data from state
         user_query = state.get("user_query", "")
@@ -41,19 +41,35 @@ class ReportAgent(BaseAgent):
         analyst_consensus = state.get("analyst_consensus")
         peer_valuation = state.get("peer_valuation")
         context = state.get("retrieved_context")
+        executed_agents = state.get("executed_agents", [])
 
         self.logger.info(f"Generating report for query: {user_query[:50]}...")
+        self.logger.info(f"Intent: {intent}, Executed agents: {executed_agents}")
 
-        # Generate report based on available data
+        # Determine which template to use based on intent
+        template = self._select_template(intent)
+
+        # Build metadata about data availability
+        data_sources = {
+            "market_data": bool(market_data),
+            "sentiment": bool(sentiment),
+            "analyst_consensus": bool(analyst_consensus),
+            "peer_valuation": bool(peer_valuation),
+            "context": bool(context)
+        }
+
+        # Generate report based on available data and template
         report = await self._generate_report(
             user_query=user_query,
             tickers=tickers,
             intent=intent,
+            template=template,
             market_data=market_data,
             sentiment=sentiment,
             analyst_consensus=analyst_consensus,
             peer_valuation=peer_valuation,
-            context=context
+            context=context,
+            data_sources=data_sources
         )
 
         # Generate snapshot for beginner investors
@@ -65,99 +81,94 @@ class ReportAgent(BaseAgent):
             peer_valuation=peer_valuation
         )
 
-        # Return both report and snapshot
+        # Build report metadata
+        report_metadata = {
+            "executed_agents": executed_agents,
+            "data_sources": data_sources,
+            "intent": intent,
+            "tickers": tickers,
+            "report_template": template
+        }
+
+        # Return report, snapshot, and metadata
         return {
             "report": report,
-            "snapshot": snapshot
+            "snapshot": snapshot,
+            "report_metadata": report_metadata
         }
+
+    def _select_template(self, intent: str) -> str:
+        """
+        Select report template based on query intent.
+
+        Args:
+            intent: Query intent from router
+
+        Returns:
+            Template name
+        """
+        template_map = {
+            "price_query": "brief_market",
+            "sentiment_analysis": "sentiment_focused",
+            "comparison": "peer_comparison",
+            "fundamental_analysis": "comprehensive",
+            "general_research": "comprehensive"
+        }
+
+        template = template_map.get(intent, "comprehensive")
+        self.logger.info(f"Selected template: {template} for intent: {intent}")
+        return template
 
     async def _generate_report(
         self,
         user_query: str,
         tickers: list,
         intent: str,
+        template: str,
         market_data: list,
         sentiment: list,
         analyst_consensus: list,
         peer_valuation: list,
-        context: list
+        context: list,
+        data_sources: dict
     ) -> str:
         """
-        Generate structured report using LLM.
+        Generate structured report using LLM with dynamic template.
 
         Args:
             user_query: Original user query
             tickers: List of tickers
             intent: Query intent
+            template: Report template to use
             market_data: Market data from MarketDataAgent
             sentiment: Sentiment analysis from SentimentAgent
             analyst_consensus: Analyst consensus from ForwardLookingAgent
             peer_valuation: Peer valuation comparison from MarketDataAgent
             context: Retrieved documents from RAG
+            data_sources: Dict of data availability
 
         Returns:
             Formatted report string
         """
-        # Build context sections
-        market_section = self._format_market_data(market_data) if market_data else "Market data not available."
-        sentiment_section = self._format_sentiment(sentiment) if sentiment else "Sentiment analysis not available."
-        analyst_section = self._format_analyst_consensus(analyst_consensus) if analyst_consensus else "Analyst consensus not available."
-        peer_section = self._format_peer_valuation(peer_valuation) if peer_valuation else "Peer valuation comparison not available."
-        context_section = self._format_context(context) if context else "No additional context retrieved."
+        # Build dynamic sections based on template and data availability
+        sections = self._build_sections(
+            template=template,
+            data_sources=data_sources,
+            market_data=market_data,
+            sentiment=sentiment,
+            analyst_consensus=analyst_consensus,
+            peer_valuation=peer_valuation,
+            context=context
+        )
 
-        # Create prompt
-        prompt = f"""Generate a comprehensive investment research report to answer this query:
-
-**User Query:** {user_query}
-
-**Tickers:** {', '.join(tickers) if tickers else 'Not specified'}
-**Intent:** {intent}
-
----
-
-**Market Data:**
-{market_section}
-
----
-
-**Peer Valuation Comparison:**
-{peer_section}
-
----
-
-**Sentiment Analysis:**
-{sentiment_section}
-
----
-
-**Analyst Consensus & Forward-Looking:**
-{analyst_section}
-
----
-
-**Supporting Context:**
-{context_section}
-
----
-
-Please provide a structured report with:
-
-1. **Executive Summary** (2-3 sentences)
-2. **Market Analysis**
-   - Current price and valuation metrics
-   - 52-week trend analysis: Interpret the stock's position in its 52-week range and what it suggests about momentum
-3. **Peer Valuation Comparison** (how the stock's valuation compares to sector averages)
-4. **Sentiment & News** (recent news themes, sentiment overview)
-5. **Analyst Consensus & Forward-Looking** (price targets, upside potential, recommendation)
-6. **Key Insights** (3-5 bullet points, include insights from 52-week trends, peer comparison, and analyst expectations)
-7. **Conclusion** (investment perspective considering all analysis)
-
-Format the report in clear sections with markdown formatting.
-Be objective and data-driven. If information is missing, acknowledge it.
-
-**Important:**
-- When analyzing 52-week trends: Stocks near 52-week highs (80%+ position) may indicate strong momentum or potential resistance. Stocks near 52-week lows (20%- position) may indicate weakness or potential support/value opportunity.
-- When analyzing peer valuation: Premium valuations (positive %) may indicate market confidence or overvaluation. Discount valuations (negative %) may indicate undervaluation or market concerns."""
+        # Create dynamic prompt based on template
+        prompt = self._create_prompt(
+            user_query=user_query,
+            tickers=tickers,
+            intent=intent,
+            template=template,
+            sections=sections
+        )
 
         try:
             response = await self.client.chat.completions.create(
@@ -185,6 +196,203 @@ Be objective and data-driven. If information is missing, acknowledge it.
             return self._generate_fallback_report(
                 user_query, tickers, market_data, sentiment
             )
+
+    def _build_sections(
+        self,
+        template: str,
+        data_sources: dict,
+        market_data: list,
+        sentiment: list,
+        analyst_consensus: list,
+        peer_valuation: list,
+        context: list
+    ) -> dict:
+        """
+        Build report sections based on template and data availability.
+
+        Args:
+            template: Report template name
+            data_sources: Dict indicating which data is available
+            market_data: Market data
+            sentiment: Sentiment data
+            analyst_consensus: Analyst consensus data
+            peer_valuation: Peer valuation data
+            context: Retrieved context
+
+        Returns:
+            Dict of section names and formatted content
+        """
+        sections = {}
+
+        # Define which sections each template includes
+        template_sections = {
+            "brief_market": ["market", "52_week_trend"],
+            "sentiment_focused": ["sentiment", "market"],
+            "peer_comparison": ["market", "peer_valuation", "key_insights"],
+            "comprehensive": ["market", "52_week_trend", "peer_valuation", "sentiment", "analyst", "context", "key_insights"]
+        }
+
+        # Get sections for this template
+        template_layout = template_sections.get(template, template_sections["comprehensive"])
+
+        # Build only the sections that are in the template AND have data
+        if "market" in template_layout and data_sources.get("market_data"):
+            sections["Market Analysis"] = self._format_market_data(market_data)
+
+        if "52_week_trend" in template_layout and data_sources.get("market_data"):
+            # 52-week trend is part of market data, but we highlight it separately for some templates
+            sections["52-Week Trend Analysis"] = self._format_52_week_trend(market_data)
+
+        if "peer_valuation" in template_layout and data_sources.get("peer_valuation"):
+            sections["Peer Valuation Comparison"] = self._format_peer_valuation(peer_valuation)
+
+        if "sentiment" in template_layout and data_sources.get("sentiment"):
+            sections["Sentiment & News"] = self._format_sentiment(sentiment)
+
+        if "analyst" in template_layout and data_sources.get("analyst_consensus"):
+            sections["Analyst Consensus & Forward-Looking"] = self._format_analyst_consensus(analyst_consensus)
+
+        if "context" in template_layout and data_sources.get("context"):
+            sections["Supporting Context"] = self._format_context(context)
+
+        # Key insights is always included if we have any data
+        if "key_insights" in template_layout:
+            sections["Key Insights"] = "(To be generated by LLM based on available data)"
+
+        return sections
+
+    def _create_prompt(
+        self,
+        user_query: str,
+        tickers: list,
+        intent: str,
+        template: str,
+        sections: dict
+    ) -> str:
+        """
+        Create dynamic prompt based on template and available sections.
+
+        Args:
+            user_query: User's query
+            tickers: List of tickers
+            intent: Query intent
+            template: Template name
+            sections: Dict of section names and content
+
+        Returns:
+            Formatted prompt string
+        """
+        # Build data sections
+        data_section = ""
+        for section_name, content in sections.items():
+            if section_name != "Key Insights":  # Skip placeholder
+                data_section += f"\n---\n\n**{section_name}:**\n{content}\n"
+
+        # Build required sections list
+        section_names = list(sections.keys())
+
+        # Template-specific instructions
+        template_instructions = {
+            "brief_market": """
+Provide a BRIEF market summary (3-4 sentences) covering:
+- Current price and change
+- 52-week position and what it indicates
+- Quick valuation assessment""",
+
+            "sentiment_focused": """
+Provide a sentiment-focused analysis with:
+1. **Executive Summary** (2-3 sentences, sentiment-driven)
+2. **Sentiment Analysis** (detailed news themes and sentiment breakdown)
+3. **Market Context** (brief price overview to support sentiment)
+4. **Conclusion** (investment perspective based primarily on sentiment)""",
+
+            "peer_comparison": """
+Provide a peer comparison analysis with:
+1. **Executive Summary** (2-3 sentences)
+2. **Market Overview** (current price and basics)
+3. **Peer Valuation Comparison** (detailed comparison with sector)
+4. **Key Insights** (3-5 bullet points on valuation positioning)
+5. **Conclusion** (investment perspective based on relative valuation)""",
+
+            "comprehensive": """
+Provide a comprehensive investment research report with:
+1. **Executive Summary** (2-3 sentences)
+2. Then cover each available section in detail
+3. **Key Insights** (3-5 bullet points synthesizing all data)
+4. **Conclusion** (balanced investment perspective)"""
+        }
+
+        instruction = template_instructions.get(template, template_instructions["comprehensive"])
+
+        # Build prompt
+        prompt = f"""Generate an investment research report to answer this query:
+
+**User Query:** {user_query}
+
+**Tickers:** {', '.join(tickers) if tickers else 'Not specified'}
+**Intent:** {intent}
+{data_section}
+
+---
+
+{instruction}
+
+**IMPORTANT INSTRUCTIONS:**
+- Generate ONLY sections based on the available data above
+- Available sections: {', '.join(section_names)}
+- DO NOT hallucinate or make up information for unavailable data
+- Use clear markdown formatting
+- Be objective and data-driven
+- RESPOND IN THE SAME LANGUAGE AS THE USER'S QUERY (Chinese query = Chinese response, English query = English response)
+
+**Analysis Guidelines:**
+- 52-week trends: Stocks near highs (80%+) = strong momentum or resistance. Near lows (20%-) = weakness or potential value
+- Peer valuation: Premium (positive %) = market confidence or overvaluation. Discount (negative %) = undervaluation or concerns
+"""
+
+        return prompt
+
+    def _format_52_week_trend(self, market_data: list) -> str:
+        """Format 52-week trend analysis specifically."""
+        if not market_data:
+            return "No market data available."
+
+        sections = []
+        for data in market_data:
+            ticker = data.get("ticker", "N/A")
+            week_52_high = data.get("year_high")
+            week_52_low = data.get("year_low")
+            week_52_position = data.get("week_52_position")
+            distance_from_high = data.get("distance_from_high")
+            distance_from_low = data.get("distance_from_low")
+            trend_signal = data.get("trend_signal")
+            current_price = data.get("current_price")
+
+            if not (week_52_high and week_52_low and week_52_position is not None):
+                continue
+
+            section = f"**{ticker}**\n"
+            section += f"- Current Price: ${current_price:.2f}\n" if current_price else ""
+            section += f"- 52-Week Range: ${week_52_low:.2f} - ${week_52_high:.2f}\n"
+            section += f"- Position in Range: {week_52_position:.1f}%"
+
+            if trend_signal == "near_high":
+                section += " (Trading near 52-week high - strong momentum or potential resistance)"
+            elif trend_signal == "near_low":
+                section += " (Trading near 52-week low - potential value or concern)"
+            else:
+                section += " (Mid-range - balanced positioning)"
+            section += "\n"
+
+            if distance_from_high is not None:
+                section += f"- Distance from 52W High: {distance_from_high:+.1f}%\n"
+            if distance_from_low is not None:
+                section += f"- Distance from 52W Low: {distance_from_low:+.1f}%\n"
+
+            sections.append(section)
+
+        return "\n".join(sections) if sections else "52-week trend data not available."
+
 
     def _format_market_data(self, market_data: list) -> str:
         """Format market data for report."""
