@@ -1,5 +1,6 @@
 import { FileStack, Clock, Sparkles, X, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { researchApi } from '../api/client';
 
 interface DeepAnalysisBannerProps {
   ticker: string;
@@ -33,6 +34,37 @@ export default function DeepAnalysisBanner({ ticker, onRequestAnalysis, onRefres
       }, 2000);
     }
   }, [status, countdown, ticker, onRefreshQuery]);
+
+  // Polling for completion (check every 5 seconds)
+  useEffect(() => {
+    if (status !== 'processing') {
+      return; // Only poll when processing
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const result = await researchApi.checkDeepAnalysisStatus(ticker);
+
+        if (result.available) {
+          // Data is ready! Immediately complete
+          setStatus('completed');
+
+          // Auto-refresh query after 1 second
+          setTimeout(() => {
+            if (onRefreshQuery) {
+              onRefreshQuery(ticker);
+            }
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('Error checking deep analysis status:', error);
+        // Continue polling on error
+      }
+    }, 5000); // Poll every 5 seconds
+
+    // Cleanup on unmount or status change
+    return () => clearInterval(pollInterval);
+  }, [status, ticker, onRefreshQuery]);
 
   const handleRequest = async () => {
     setStatus('processing');

@@ -297,6 +297,63 @@ async def request_deep_analysis(ticker: str):
 
 
 @router.get(
+    "/deep-analysis/{ticker}/status",
+    status_code=status.HTTP_200_OK,
+    summary="Check Deep Analysis Status",
+    description="Check if deep analysis data (SEC 10-K) is available for a ticker. "
+                "Use this endpoint to poll for completion after requesting deep analysis.",
+    responses={
+        200: {
+            "description": "Status check successful",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "ticker": "NVDA",
+                        "available": True
+                    }
+                }
+            }
+        },
+        500: {
+            "description": "Internal server error",
+            "model": ErrorResponse
+        }
+    }
+)
+async def check_deep_analysis_status(ticker: str):
+    """
+    Check if deep analysis data is available for a ticker.
+
+    This is a lightweight endpoint for polling after requesting deep analysis.
+    Returns immediately with availability status.
+
+    Args:
+        ticker: Stock ticker symbol (e.g., "NVDA", "GOOGL")
+
+    Returns:
+        Status object with availability boolean
+
+    Raises:
+        HTTPException: 500 for errors
+    """
+    try:
+        ticker = ticker.upper()
+        available = await rag_pipeline.has_deep_analysis_data(ticker)
+
+        return {
+            "ticker": ticker,
+            "available": available
+        }
+
+    except Exception as e:
+        logger.error(f"Error checking deep analysis status for {ticker}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to check deep analysis status: {str(e)}"
+        )
+
+
+@router.get(
     "/history/{session_id}",
     response_model=ConversationHistoryResponse,
     status_code=status.HTTP_200_OK,

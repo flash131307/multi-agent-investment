@@ -25,6 +25,13 @@ export const researchApi = {
     await apiClient.post(`/research/deep-analysis/${ticker}`);
   },
 
+  checkDeepAnalysisStatus: async (ticker: string): Promise<{ ticker: string; available: boolean }> => {
+    const response = await apiClient.get<{ ticker: string; available: boolean }>(
+      `/research/deep-analysis/${ticker}/status`
+    );
+    return response.data;
+  },
+
   getSessionHistory: async (sessionId: string): Promise<SessionHistoryResponse> => {
     const response = await apiClient.get<SessionHistoryResponse>(`/research/history/${sessionId}`);
     return response.data;
