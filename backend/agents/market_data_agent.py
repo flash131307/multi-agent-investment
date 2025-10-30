@@ -103,14 +103,9 @@ class MarketDataAgent(BaseAgent):
         # Extract key fields
         current_price = stock_info.get("current_price")
 
-        # Calculate change %
-        day_high = stock_info.get("52_week_high")
-        day_low = stock_info.get("52_week_low")
-
-        change_percent = None
-        if current_price and day_low and day_low > 0:
-            # Simple approximation (ideally would use previous close)
-            change_percent = ((current_price - day_low) / day_low) * 100
+        # Get daily change percent from Yahoo Finance (regularMarketChangePercent)
+        # Yahoo Finance already provides this as percentage (e.g., 0.21 = 0.21%, not 21%)
+        change_percent = stock_info.get("regular_market_change_percent")
 
         # Calculate 52-week trend metrics
         week_52_high = stock_info.get("52_week_high")
@@ -229,13 +224,9 @@ class MarketDataAgent(BaseAgent):
         # Extract key fields
         current_price = stock_info.get("current_price")
 
-        # Calculate change %
-        day_high = stock_info.get("52_week_high")
-        day_low = stock_info.get("52_week_low")
-
-        change_percent = None
-        if current_price and day_low and day_low > 0:
-            change_percent = ((current_price - day_low) / day_low) * 100
+        # Get daily change percent from Yahoo Finance (regularMarketChangePercent)
+        # Yahoo Finance already provides this as percentage (e.g., 0.21 = 0.21%, not 21%)
+        change_percent = stock_info.get("regular_market_change_percent")
 
         # Calculate 52-week trend metrics
         week_52_high = stock_info.get("52_week_high")

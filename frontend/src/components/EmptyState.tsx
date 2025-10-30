@@ -1,4 +1,4 @@
-import { Search, TrendingUp, LineChart, BarChart3, PieChart } from 'lucide-react';
+import { Search, TrendingUp, LineChart, BarChart3 } from 'lucide-react';
 
 export default function EmptyState() {
   return (
@@ -17,7 +17,7 @@ export default function EmptyState() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
           <FeatureCard
             icon={TrendingUp}
             title="Market Data"
@@ -33,11 +33,6 @@ export default function EmptyState() {
             title="Analyst Views"
             description="Consensus & targets"
           />
-          <FeatureCard
-            icon={PieChart}
-            title="Valuation"
-            description="Peer comparison"
-          />
         </div>
 
         <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 text-left">
@@ -50,10 +45,6 @@ export default function EmptyState() {
             <li className="flex items-start space-x-2">
               <span className="text-primary-500 font-bold">•</span>
               <span>Performance analysis and valuation metrics</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-primary-500 font-bold">•</span>
-              <span>Comparative analysis between companies or sectors</span>
             </li>
             <li className="flex items-start space-x-2">
               <span className="text-primary-500 font-bold">•</span>

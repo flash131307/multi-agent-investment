@@ -71,6 +71,8 @@ export interface ResearchQueryResponse {
   sentiment_available: boolean;
   analyst_consensus_available: boolean;
   context_retrieved: number;
+  deep_analysis_available: boolean;  // Whether deep analysis (SEC 10-K) is available
+  can_request_deep_analysis: boolean;  // Whether user can request deep analysis
   visualization_data: VisualizationData[];
   snapshot: InvestorSnapshot | null;
   report_metadata: ReportMetadata | null;  // Report generation metadata

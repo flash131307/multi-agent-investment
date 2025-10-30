@@ -21,11 +21,11 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
   const getTrend = () => {
     const change = snapshot.price_change_pct;
     if (change === null || change === undefined) return { label: 'Unknown', color: 'text-gray-400' };
-    if (change > 20) return { label: 'Strong Uptrend / 强势上涨', color: 'text-success-400' };
-    if (change > 5) return { label: 'Uptrend / 上涨', color: 'text-success-500' };
-    if (change > -5) return { label: 'Sideways / 横盘', color: 'text-gray-400' };
-    if (change > -20) return { label: 'Downtrend / 下跌', color: 'text-error-500' };
-    return { label: 'Strong Downtrend / 强势下跌', color: 'text-error-400' };
+    if (change > 20) return { label: 'Strong Uptrend', color: 'text-success-400' };
+    if (change > 5) return { label: 'Uptrend', color: 'text-success-500' };
+    if (change > -5) return { label: 'Sideways', color: 'text-gray-400' };
+    if (change > -20) return { label: 'Downtrend', color: 'text-error-500' };
+    return { label: 'Strong Downtrend', color: 'text-error-400' };
   };
 
   const trend = getTrend();
@@ -38,7 +38,7 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
           <div className="flex items-center space-x-3">
             <Sparkles className="w-5 h-5 text-primary-500" />
             <h2 className="text-lg font-bold text-white">
-              Investor Snapshot / 投资快照
+              Investor Snapshot
             </h2>
           </div>
           <span className="px-4 py-1.5 bg-primary-600/30 border-2 border-primary-500 text-primary-300 rounded-lg text-base font-mono font-bold">
@@ -62,7 +62,7 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
         <div className="space-y-2">
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline space-x-2">
-              <span className="text-gray-400 text-sm">💰 Current Price / 当前价格:</span>
+              <span className="text-gray-400 text-sm">💰 Current Price:</span>
               <span className="text-2xl font-bold text-white">
                 ${snapshot.current_price?.toFixed(2) || 'N/A'}
               </span>
@@ -76,7 +76,7 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
 
           <div className="flex items-center justify-between text-sm">
             <div className="text-gray-400">
-              市值: <span className="text-white font-semibold">{formatMarketCap(snapshot.market_cap)}</span>
+              Market Cap: <span className="text-white font-semibold">{formatMarketCap(snapshot.market_cap)}</span>
               {' | '}
               P/E: <span className="text-white font-semibold">{snapshot.pe_ratio ? snapshot.pe_ratio.toFixed(1) : 'N/A'}</span>
             </div>
@@ -95,7 +95,7 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
           <div>
             <h3 className="text-sm font-semibold text-success-400 flex items-center space-x-2 mb-3">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Key Highlights / 关键亮点</span>
+              <span>Key Highlights</span>
             </h3>
             <ul className="space-y-2">
               {snapshot.key_highlights.map((highlight, index) => (
@@ -113,7 +113,7 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
           <div>
             <h3 className="text-sm font-semibold text-warning-400 flex items-center space-x-2 mb-3">
               <AlertTriangle className="w-4 h-4" />
-              <span>Risk Warnings / 风险提示</span>
+              <span>Risk Warnings</span>
             </h3>
             <ul className="space-y-2">
               {snapshot.risk_warnings.map((risk, index) => (
@@ -132,7 +132,6 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
         <p className="text-xs text-gray-400">
           <span className="text-primary-400 font-medium">💡 Tip:</span>
           {' '}Switch to "Detailed" mode for comprehensive analysis and professional charts.
-          {' '}切换到"详细"模式查看完整报告和专业图表。
         </p>
       </div>
     </div>

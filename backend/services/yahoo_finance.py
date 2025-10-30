@@ -69,6 +69,8 @@ class YahooFinanceService:
                 "sector": info.get("sector", "N/A"),
                 "industry": info.get("industry", "N/A"),
                 "current_price": info.get("currentPrice", info.get("regularMarketPrice")),
+                "previous_close": info.get("previousClose", info.get("regularMarketPreviousClose")),
+                "regular_market_change_percent": info.get("regularMarketChangePercent"),
                 "market_cap": info.get("marketCap"),
                 "pe_ratio": info.get("trailingPE"),
                 "forward_pe": info.get("forwardPE"),

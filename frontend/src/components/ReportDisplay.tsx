@@ -6,13 +6,23 @@ import type { ResearchQueryResponse } from '../types';
 import PriceChart from './Charts/PriceChart';
 import PeerComparisonChart from './Charts/PeerComparisonChart';
 import InvestorSnapshot from './InvestorSnapshot';
+import DeepAnalysisBanner from './DeepAnalysisBanner';
 
 interface ReportDisplayProps {
   report: ResearchQueryResponse;
+  onRequestDeepAnalysis?: (ticker: string) => Promise<void>;
+  onRefreshQuery?: (ticker: string) => void;
 }
 
-export default function ReportDisplay({ report }: ReportDisplayProps) {
+export default function ReportDisplay({ report, onRequestDeepAnalysis, onRefreshQuery }: ReportDisplayProps) {
   const [viewMode, setViewMode] = useState<'simple' | 'detailed'>('simple');
+
+  const handleDeepAnalysisRequest = async (ticker: string) => {
+    if (onRequestDeepAnalysis) {
+      await onRequestDeepAnalysis(ticker);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString('en-US', {
@@ -61,12 +71,21 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
         </div>
       </div>
 
+      {/* Deep Analysis Banner - Top Placement */}
+      {report.can_request_deep_analysis && report.tickers && report.tickers.length > 0 && (
+        <DeepAnalysisBanner
+          ticker={report.tickers[0]}
+          onRequestAnalysis={handleDeepAnalysisRequest}
+          onRefreshQuery={onRefreshQuery}
+        />
+      )}
+
       {/* View Mode Toggle */}
       <div className="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-lg p-4">
         <div className="flex items-center space-x-2">
           <Sparkles className="w-4 h-4 text-primary-500" />
           <span className="text-sm text-gray-300">
-            View Mode / 查看模式
+            View Mode
           </span>
         </div>
         <div className="flex items-center space-x-2 bg-gray-800 rounded-lg p-1">
@@ -79,7 +98,7 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Simple / 简单</span>
+            <span>Simple</span>
           </button>
           <button
             onClick={() => setViewMode('detailed')}
@@ -90,7 +109,7 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
             }`}
           >
             <FileStack className="w-4 h-4" />
-            <span>Detailed / 详细</span>
+            <span>Detailed</span>
           </button>
         </div>
       </div>
@@ -104,7 +123,7 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
               <div className="flex items-center space-x-2 mb-2">
                 <Target className="w-4 h-4 text-primary-500" />
                 <h3 className="text-sm font-medium text-gray-300">
-                  Routing Decision / 路由决策
+                  Routing Decision
                 </h3>
               </div>
 
@@ -112,40 +131,15 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
               <p className="text-xs text-gray-500 mb-3 leading-relaxed">
                 Router analyzed the query and determined which agents to activate.
                 Check the indicators below for actual execution results.
-                <br />
-                <span className="text-gray-600">
-                  路由器分析查询并决定激活哪些代理。查看下方指示器了解实际执行结果。
-                </span>
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Intent */}
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Detected Intent</p>
-                  <div className="flex items-center space-x-2">
-                    <span className="px-3 py-1.5 bg-primary-950/30 border border-primary-800/50 text-primary-400 rounded-md text-sm font-medium">
-                      {report.intent.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Routing Flags */}
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Agent Routing Flags</p>
-                  <div className="flex flex-wrap gap-2">
-                    <RoutingFlag
-                      label="Market Data"
-                      enabled={report.routing_flags.market_data}
-                    />
-                    <RoutingFlag
-                      label="Sentiment"
-                      enabled={report.routing_flags.sentiment}
-                    />
-                    <RoutingFlag
-                      label="Context"
-                      enabled={report.routing_flags.context}
-                    />
-                  </div>
+              {/* Intent */}
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Detected Intent</p>
+                <div className="flex items-center space-x-2">
+                  <span className="px-3 py-1.5 bg-primary-950/30 border border-primary-800/50 text-primary-400 rounded-md text-sm font-medium">
+                    {report.intent.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </span>
                 </div>
               </div>
             </div>
@@ -200,7 +194,7 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
                   <BarChart3 className="w-6 h-6 text-primary-500" />
-                  <span>Price Trend / 价格走势</span>
+                  <span>Price Trend</span>
                 </h2>
               </div>
               {report.visualization_data.map((vizData) => (
@@ -230,7 +224,7 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
                   <BarChart3 className="w-6 h-6 text-primary-500" />
-                  <span>Interactive Charts / 交互式图表</span>
+                  <span>Interactive Charts</span>
                 </h2>
               </div>
 
@@ -257,10 +251,6 @@ export default function ReportDisplay({ report }: ReportDisplayProps) {
         <p className="text-xs text-gray-500 text-center">
           This report was generated by AI agents and should not be considered as financial advice.
           Always conduct your own research and consult with a qualified financial advisor before making investment decisions.
-        </p>
-        <p className="text-xs text-gray-500 text-center mt-2">
-          本报告由AI代理生成，不应被视为财务建议。
-          在做出投资决策之前，请务必进行自己的研究并咨询合格的财务顾问。
         </p>
       </div>
     </div>

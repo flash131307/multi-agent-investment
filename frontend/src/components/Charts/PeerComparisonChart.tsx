@@ -15,11 +15,10 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-white flex items-center space-x-2 mb-4">
           <BarChart3 className="w-5 h-5 text-primary-500" />
-          <span>Peer Valuation Comparison / 同行估值对比</span>
+          <span>Peer Valuation Comparison</span>
         </h3>
         <div className="text-center py-8 text-gray-500">
           <p>No peer comparison data available</p>
-          <p className="text-sm mt-1">暂无同行对比数据</p>
         </div>
       </div>
     );
@@ -62,7 +61,7 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-white flex items-center space-x-2 mb-4">
           <BarChart3 className="w-5 h-5 text-primary-500" />
-          <span>Peer Valuation Comparison / 同行估值对比</span>
+          <span>Peer Valuation Comparison</span>
         </h3>
 
         {/* Info banner for beginners (Simple mode only) */}
@@ -71,7 +70,7 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
             <Info className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
             <div className="text-xs text-gray-400">
               <p className="mb-2">
-                <span className="text-primary-400 font-medium">For beginners / 初学者提示：</span>
+                <span className="text-primary-400 font-medium">For beginners:</span>
               </p>
               <p className="mb-2">
                 These ratios help compare how "expensive" or "cheap" a stock is relative to its peers.
@@ -80,11 +79,11 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
               <p className="flex items-center space-x-4">
                 <span className="flex items-center space-x-1">
                   <span className="inline-block w-2 h-2 bg-primary-500 rounded"></span>
-                  <span className="text-primary-400">Blue = Target Stock / 目标股票</span>
+                  <span className="text-primary-400">Blue = Target Stock</span>
                 </span>
                 <span className="flex items-center space-x-1">
                   <span className="inline-block w-2 h-2 bg-gray-500 rounded"></span>
-                  <span className="text-gray-400">Gray = Peers / 同行</span>
+                  <span className="text-gray-400">Gray = Peers</span>
                 </span>
               </p>
             </div>
@@ -97,9 +96,9 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
             <Info className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
             <div className="text-xs text-gray-400">
               <ul className="space-y-1 list-disc list-inside">
-                <li><strong>P/E Ratio (市盈率):</strong> Price ÷ Earnings. Lower is typically cheaper, but growth stocks may have high P/E.</li>
-                <li><strong>P/B Ratio (市净率):</strong> Price ÷ Book Value. Below 1.0 may indicate undervaluation.</li>
-                <li><strong>P/S Ratio (市销率):</strong> Price ÷ Sales. Useful for companies without profits yet.</li>
+                <li><strong>P/E Ratio:</strong> Price ÷ Earnings. Lower is typically cheaper, but growth stocks may have high P/E.</li>
+                <li><strong>P/B Ratio:</strong> Price ÷ Book Value. Below 1.0 may indicate undervaluation.</li>
+                <li><strong>P/S Ratio:</strong> Price ÷ Sales. Useful for companies without profits yet.</li>
               </ul>
             </div>
           </div>
@@ -110,7 +109,7 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
       <div className="mb-8">
         <FinancialTermTooltip term="P/E" showIcon={false}>
           <h4 className="text-sm font-medium text-gray-300 mb-3 cursor-help inline-block">
-            P/E Ratio (Price-to-Earnings) / 市盈率
+            P/E Ratio (Price-to-Earnings)
           </h4>
         </FinancialTermTooltip>
         <ResponsiveContainer width="100%" height={250}>
@@ -139,7 +138,7 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
       <div className="mb-8">
         <FinancialTermTooltip term="P/B" showIcon={false}>
           <h4 className="text-sm font-medium text-gray-300 mb-3 cursor-help inline-block">
-            P/B Ratio (Price-to-Book) / 市净率
+            P/B Ratio (Price-to-Book)
           </h4>
         </FinancialTermTooltip>
         <ResponsiveContainer width="100%" height={250}>
@@ -168,7 +167,7 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
       <div>
         <FinancialTermTooltip term="P/S" showIcon={false}>
           <h4 className="text-sm font-medium text-gray-300 mb-3 cursor-help inline-block">
-            P/S Ratio (Price-to-Sales) / 市销率
+            P/S Ratio (Price-to-Sales)
           </h4>
         </FinancialTermTooltip>
         <ResponsiveContainer width="100%" height={250}>
@@ -197,11 +196,11 @@ export default function PeerComparisonChart({ data, viewMode = 'simple' }: PeerC
       <div className="mt-6 flex items-center justify-center space-x-6 text-xs">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-primary-500 rounded"></div>
-          <span className="text-gray-400">Target Stock / 目标股票</span>
+          <span className="text-gray-400">Target Stock</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-gray-500 rounded"></div>
-          <span className="text-gray-400">Sector Average / 行业平均</span>
+          <span className="text-gray-400">Sector Average</span>
         </div>
       </div>
     </div>

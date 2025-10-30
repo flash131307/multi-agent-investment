@@ -58,7 +58,7 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
             <TrendingUp className="w-5 h-5 text-primary-500" />
-            <span>{data.ticker} Price Trend / {data.ticker} 价格走势</span>
+            <span>{data.ticker} Price Trend</span>
           </h3>
           <div className={`flex items-center space-x-1 px-3 py-1 rounded-full border ${
             isPositive
@@ -85,10 +85,10 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
             <div className="flex items-center justify-between text-xs text-gray-400">
               <FinancialTermTooltip term="52-Week High">
                 <span className="cursor-help">
-                  52-Week Range / 52周区间
+                  52-Week Range
                 </span>
               </FinancialTermTooltip>
-              <span>Current Position: {data.current_position_pct.toFixed(1)}% / 当前位置</span>
+              <span>Current Position: {data.current_position_pct.toFixed(1)}%</span>
             </div>
             <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
               <div
@@ -113,18 +113,17 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
             <Info className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
             <div className="text-xs text-gray-400 space-y-1">
               <p>
-                <span className="text-primary-400 font-medium">For beginners / 初学者提示：</span>
+                <span className="text-primary-400 font-medium">For beginners:</span>
                 {' '}The chart shows the stock's closing price over the past year.
-                {' '}此图表显示过去一年的收盘价。
               </p>
               <p className="flex items-center space-x-4">
                 <span className="flex items-center space-x-1">
                   <span className="inline-block w-2 h-2 bg-success-500 rounded-full"></span>
-                  <span className="text-success-400">Green = Bullish (上涨)</span>
+                  <span className="text-success-400">Green = Bullish</span>
                 </span>
                 <span className="flex items-center space-x-1">
                   <span className="inline-block w-2 h-2 bg-error-500 rounded-full"></span>
-                  <span className="text-error-400">Red = Bearish (下跌)</span>
+                  <span className="text-error-400">Red = Bearish</span>
                 </span>
               </p>
             </div>
@@ -187,7 +186,7 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorPrice)"
-            name="Closing Price / 收盘价"
+            name="Closing Price"
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -198,7 +197,7 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
           {data.period_high && (
             <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-success-800/30">
               <FinancialTermTooltip term="52-Week High" showIcon={false}>
-                <p className="text-xs text-gray-500 mb-1 cursor-help">Period High / 期间最高</p>
+                <p className="text-xs text-gray-500 mb-1 cursor-help">Period High</p>
               </FinancialTermTooltip>
               <p className="text-sm font-semibold text-success-400">{formatPrice(data.period_high)}</p>
             </div>
@@ -206,7 +205,7 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
           {data.period_low && (
             <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-error-800/30">
               <FinancialTermTooltip term="52-Week Low" showIcon={false}>
-                <p className="text-xs text-gray-500 mb-1 cursor-help">Period Low / 期间最低</p>
+                <p className="text-xs text-gray-500 mb-1 cursor-help">Period Low</p>
               </FinancialTermTooltip>
               <p className="text-sm font-semibold text-error-400">{formatPrice(data.period_low)}</p>
             </div>
@@ -214,7 +213,7 @@ export default function PriceChart({ data, viewMode = 'simple' }: PriceChartProp
           {data.average_volume && (
             <div className="text-center p-3 bg-gray-800/50 rounded-lg border border-gray-700">
               <FinancialTermTooltip term="Volume" showIcon={false}>
-                <p className="text-xs text-gray-500 mb-1 cursor-help">Avg Volume / 平均成交量</p>
+                <p className="text-xs text-gray-500 mb-1 cursor-help">Avg Volume</p>
               </FinancialTermTooltip>
               <p className="text-sm font-semibold text-white">{formatVolume(data.average_volume)}</p>
             </div>

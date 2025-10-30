@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "last_updated": "2025-10-29T22:43:37.334524",
+    "last_updated": "2025-10-30T04:39:46.025534",
     "version": "1.0",
-    "total_entries": 95
+    "total_entries": 111
   },
   "companies": {
     "apple": {
@@ -667,6 +667,118 @@
       "ticker": "TSLA",
       "official_name": "\u7279\u65af\u62c9\u6700\u8fd1\u7684\u5e02\u573a\u60c5\u7eea\u600e\u4e48\u6837\uff1f",
       "cached_at": "2025-10-29T22:43:37.334210",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u7279\u65af\u62c9\u7684\u672a\u6765\u5c55\u671b\u600e\u4e48\u6837": {
+      "ticker": "TSLA",
+      "official_name": "\u7279\u65af\u62c9\u7684\u672a\u6765\u5c55\u671b\u600e\u4e48\u6837",
+      "cached_at": "2025-10-30T00:49:36.116638",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u4f18\u6b65\u6700\u8fd1\u7684\u80a1\u4ef7\u600e\u4e48\u6837": {
+      "ticker": "UBER",
+      "official_name": "\u4f18\u6b65\u6700\u8fd1\u7684\u80a1\u4ef7\u600e\u4e48\u6837",
+      "cached_at": "2025-10-30T00:50:54.745783",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u4f18\u6b65\u6700\u8fd1\u7684\u5e02\u573a\u60c5\u7eea\u600e\u4e48\u6837": {
+      "ticker": "UBER",
+      "official_name": "\u4f18\u6b65\u6700\u8fd1\u7684\u5e02\u573a\u60c5\u7eea\u600e\u4e48\u6837",
+      "cached_at": "2025-10-30T00:51:55.029024",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "what s the sentiment on tesla": {
+      "ticker": "TSLA",
+      "official_name": "What's the sentiment on Tesla?",
+      "cached_at": "2025-10-30T01:09:27.630958",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "what s the price of apple": {
+      "ticker": "AAPL",
+      "official_name": "What's the price of Apple?",
+      "cached_at": "2025-10-30T01:09:50.388389",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u7279\u65af\u62c9\u6700\u8fd1\u7684\u80a1\u4ef7\u600e\u4e48\u6837": {
+      "ticker": "TSLA",
+      "official_name": "\u7279\u65af\u62c9\u6700\u8fd1\u7684\u80a1\u4ef7\u600e\u4e48\u6837",
+      "cached_at": "2025-10-30T01:13:54.554359",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "tesla stock price": {
+      "ticker": "TSLA",
+      "official_name": "Tesla stock price?",
+      "cached_at": "2025-10-30T01:49:27.842503",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u6bd4\u8f83\u4e00\u4e0b\u4e9a\u9a6c\u900a\u548c\u8c37\u6b4c": {
+      "ticker": "AMZN",
+      "official_name": "\u6bd4\u8f83\u4e00\u4e0b\u4e9a\u9a6c\u900a\u548c\u8c37\u6b4c",
+      "cached_at": "2025-10-30T01:57:05.859738",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in nvidia": {
+      "ticker": "NVDA",
+      "official_name": "Should I invest in NVIDIA?",
+      "cached_at": "2025-10-30T03:07:39.095642",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the price of nvidia": {
+      "ticker": "NVDA",
+      "official_name": "the price of NVIDIA?",
+      "cached_at": "2025-10-30T03:08:31.530801",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in google": {
+      "ticker": "GOOGL",
+      "official_name": "Should I invest in Google?",
+      "cached_at": "2025-10-30T03:28:15.198846",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in uber": {
+      "ticker": "UBER",
+      "official_name": "Should I invest in Uber?",
+      "cached_at": "2025-10-30T03:54:47.321783",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in googl": {
+      "ticker": "GOOGL",
+      "official_name": "Should I invest in GOOGL?",
+      "cached_at": "2025-10-30T04:14:11.861088",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in amd": {
+      "ticker": "AMD",
+      "official_name": "Should I invest in AMD?",
+      "cached_at": "2025-10-30T04:14:44.269500",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in dash": {
+      "ticker": "DASH",
+      "official_name": "Should I invest in DASH?",
+      "cached_at": "2025-10-30T04:20:51.391686",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in meta stock": {
+      "ticker": "META",
+      "official_name": "Should I invest in Meta stock?",
+      "cached_at": "2025-10-30T04:39:46.025370",
       "ttl_days": 90,
       "source": "llm"
     }

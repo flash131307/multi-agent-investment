@@ -21,6 +21,10 @@ export const researchApi = {
     return response.data;
   },
 
+  requestDeepAnalysis: async (ticker: string): Promise<void> => {
+    await apiClient.post(`/research/deep-analysis/${ticker}`);
+  },
+
   getSessionHistory: async (sessionId: string): Promise<SessionHistoryResponse> => {
     const response = await apiClient.get<SessionHistoryResponse>(`/research/history/${sessionId}`);
     return response.data;

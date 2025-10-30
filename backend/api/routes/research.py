@@ -18,6 +18,7 @@ from backend.api.models import (
 )
 from backend.agents.graph import run_research_query
 from backend.memory.conversation import conversation_memory
+from backend.rag.pipeline import rag_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +134,23 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
             len(analyst_consensus) > 0 and "forward_looking" not in agent_errors
         )
 
+        # Check deep analysis availability (SEC 10-K data) for the primary ticker
+        deep_analysis_available = False
+        can_request_deep_analysis = False
+
+        if tickers:
+            primary_ticker = tickers[0]  # Use first ticker as primary
+            deep_analysis_available = await rag_pipeline.has_deep_analysis_data(primary_ticker)
+
+            # User can request deep analysis if:
+            # 1. Query has a ticker
+            # 2. Deep analysis not already available
+            # 3. Query intent suggests depth (not just price_query)
+            can_request_deep_analysis = (
+                not deep_analysis_available and
+                intent not in ["price_query"]
+            )
+
         # Build response
         response = ResearchQueryResponse(
             session_id=session_id,
@@ -147,6 +165,8 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
             sentiment_available=sentiment_available,
             analyst_consensus_available=analyst_consensus_available,
             context_retrieved=len(context),
+            deep_analysis_available=deep_analysis_available,
+            can_request_deep_analysis=can_request_deep_analysis,
             visualization_data=visualization_data or [],
             snapshot=snapshot,
             report_metadata=report_metadata
@@ -168,6 +188,111 @@ async def create_research_query(request: ResearchQueryRequest) -> ResearchQueryR
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process research query: {str(e)}"
+        )
+
+
+@router.post(
+    "/deep-analysis/{ticker}",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Request Deep Analysis",
+    description="Request deep analysis (SEC 10-K ingestion) for a ticker. "
+                "This triggers background download and processing of SEC filings. "
+                "Returns immediately with 202 Accepted status. "
+                "Once complete, subsequent queries for this ticker will include deep insights.",
+    responses={
+        202: {
+            "description": "Deep analysis request accepted and processing started",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "message": "Deep analysis request accepted for NVDA",
+                        "ticker": "NVDA",
+                        "status": "processing",
+                        "estimated_time_seconds": 60
+                    }
+                }
+            }
+        },
+        400: {
+            "description": "Invalid ticker or deep analysis already available",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Internal server error",
+            "model": ErrorResponse
+        }
+    }
+)
+async def request_deep_analysis(ticker: str):
+    """
+    Request deep analysis for a ticker (downloads and processes SEC 10-K filing).
+
+    This endpoint triggers background processing:
+    1. Downloads latest SEC 10-K filing
+    2. Chunks the document
+    3. Generates embeddings
+    4. Stores in vector database
+
+    The request returns immediately (202 Accepted).
+    Future queries for this ticker will include deep insights from the 10-K.
+
+    Args:
+        ticker: Stock ticker symbol (e.g., "NVDA", "GOOGL")
+
+    Returns:
+        Status message with estimated processing time
+
+    Raises:
+        HTTPException: 400 if ticker invalid or data already exists, 500 for errors
+    """
+    try:
+        ticker = ticker.upper()
+
+        logger.info(f"Received deep analysis request for {ticker}")
+
+        # Check if deep analysis already available
+        has_data = await rag_pipeline.has_deep_analysis_data(ticker)
+
+        if has_data:
+            logger.warning(f"Deep analysis already available for {ticker}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Deep analysis data already available for {ticker}"
+            )
+
+        # Trigger background ingestion
+        # Note: In production, this should use a task queue (Celery, etc.)
+        # For now, we'll use asyncio background task
+        import asyncio
+
+        async def background_ingestion():
+            """Background task to ingest EDGAR filing."""
+            try:
+                logger.info(f"🚀 Starting background ingestion for {ticker}")
+                count = await rag_pipeline.ingest_edgar_filing(ticker, filing_type="10-K", num_filings=1)
+                logger.info(f"✅ Background ingestion complete for {ticker}: {count} chunks")
+            except Exception as e:
+                logger.error(f"❌ Background ingestion failed for {ticker}: {e}")
+
+        # Start background task
+        asyncio.create_task(background_ingestion())
+
+        return {
+            "message": f"Deep analysis request accepted for {ticker}",
+            "ticker": ticker,
+            "status": "processing",
+            "estimated_time_seconds": 60,
+            "note": "Query this ticker again in ~60 seconds to see deep insights from SEC 10-K filing"
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(f"Error processing deep analysis request for {ticker}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process deep analysis request: {str(e)}"
         )
 
 

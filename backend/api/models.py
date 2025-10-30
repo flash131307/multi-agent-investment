@@ -188,6 +188,18 @@ class ResearchQueryResponse(BaseModel):
         ge=0
     )
 
+    deep_analysis_available: bool = Field(
+        default=False,
+        description="Whether deep analysis (SEC 10-K) is available for this ticker. "
+                    "If False, user can request to download and analyze SEC filings."
+    )
+
+    can_request_deep_analysis: bool = Field(
+        default=False,
+        description="Whether the user can request deep analysis for this query. "
+                    "True if: (1) query has a ticker, (2) deep analysis not already available"
+    )
+
     visualization_data: List[VisualizationDataModel] = Field(
         default_factory=list,
         description="Structured data for charts and visualizations"

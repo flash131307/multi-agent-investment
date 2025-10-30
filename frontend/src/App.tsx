@@ -62,6 +62,24 @@ function AppContent() {
     submitQueryMutation.reset();
   };
 
+  const handleRequestDeepAnalysis = async (ticker: string) => {
+    try {
+      await researchApi.requestDeepAnalysis(ticker);
+      // Note: The component will show processing state
+      // User needs to query again after ~60 seconds
+    } catch (error) {
+      console.error('Failed to request deep analysis:', error);
+    }
+  };
+
+  const handleRefreshQuery = (ticker: string) => {
+    // Re-submit query to get updated report with EDGAR data
+    submitQueryMutation.mutate({
+      query: `Should I invest in ${ticker}?`,
+      session_id: currentSessionId || undefined
+    });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-950">
       <Header />
@@ -97,7 +115,11 @@ function AppContent() {
               )}
 
               {submitQueryMutation.isSuccess && currentReport && viewMode === 'new' && (
-                <ReportDisplay report={currentReport} />
+                <ReportDisplay
+                  report={currentReport}
+                  onRequestDeepAnalysis={handleRequestDeepAnalysis}
+                  onRefreshQuery={handleRefreshQuery}
+                />
               )}
 
               {viewMode === 'history' && currentSessionId && (

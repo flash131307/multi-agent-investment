@@ -274,6 +274,23 @@ class RAGPipeline:
             logger.error(f"❌ Context retrieval failed: {e}")
             raise
 
+    async def has_deep_analysis_data(self, ticker: str) -> bool:
+        """
+        Check if deep analysis data (SEC 10-K) is available for a ticker.
+
+        Args:
+            ticker: Stock ticker
+
+        Returns:
+            True if EDGAR documents are available, False otherwise
+        """
+        try:
+            edgar_count = await self.vector_store.get_document_count(ticker=ticker, source="edgar")
+            return edgar_count > 0
+        except Exception as e:
+            logger.error(f"Failed to check deep analysis availability for {ticker}: {e}")
+            return False
+
     async def get_ticker_summary(self, ticker: str) -> Dict[str, Any]:
         """
         Get summary of available data for a ticker.

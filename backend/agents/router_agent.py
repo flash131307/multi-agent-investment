@@ -159,7 +159,7 @@ class RouterAgent(BaseAgent):
 
 3. **sentiment_analysis**: News, market sentiment, public opinion
    - Examples: "What's the sentiment on Tesla?", "Recent news about Apple", "特斯拉的市场情绪如何？"
-   - Flags: market_data=false, sentiment=true, context=false
+   - Flags: market_data=true, sentiment=true, context=false
 
 4. **general_research**: Comprehensive investment analysis
    - Examples: "Should I invest in Apple?", "Analyze Microsoft", "微软的投资前景如何？"
@@ -173,7 +173,7 @@ class RouterAgent(BaseAgent):
 
 - **Only set flags to true if explicitly needed for the query**
 - If query only asks for price → DON'T enable sentiment or context
-- If query only asks for sentiment → DON'T enable market_data or context
+- If query asks for sentiment → Enable market_data (for context) but DON'T enable context
 - If no tickers found → context should be true (for semantic search)
 - General/vague queries → use general_research with all flags true
 - Specific queries → use narrow intent with minimal flags
@@ -181,7 +181,7 @@ class RouterAgent(BaseAgent):
 ## Negative Examples (What NOT to do)
 
 ❌ Query: "What's AAPL price?" → DON'T set sentiment=true (not asked)
-❌ Query: "Show Tesla sentiment" → DON'T set market_data=true (not asked)
+❌ Query: "Show Tesla sentiment" → DON'T set context=true (not needed for sentiment)
 ❌ Query: "Compare stocks" → DON'T use general_research (use comparison)
 
 ## User Query Analysis
