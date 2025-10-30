@@ -70,3 +70,8 @@ frontend/dist/
 # Temporary files
 *.png
 PHASE_1-4_SOLUTION.md
+
+# Project documentation (internal use only)
+docs/
+PLAN.md
+CLAUDE.md
