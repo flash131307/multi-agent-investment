@@ -36,8 +36,15 @@ env/
 # Environment variables
 .env
 
+# Claude Code IDE configurations (contains API keys)
+.claude/
+frontend/.claude/
+
 # ChromaDB data
 data/chroma/
+
+# SEC EDGAR downloaded filings (large data files, regeneratable)
+data/edgar_filings/
 
 # Logs
 *.log
@@ -51,8 +58,15 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+test_*.py
+check_settings.py
+diagnose_openai.py
 
 # Frontend
 frontend/node_modules/
 frontend/build/
 frontend/dist/
+
+# Temporary files
+*.png
+PHASE_1-4_SOLUTION.md

@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "last_updated": "2025-10-30T04:39:46.025534",
+    "last_updated": "2025-10-30T06:22:51.297053",
     "version": "1.0",
-    "total_entries": 111
+    "total_entries": 117
   },
   "companies": {
     "apple": {
@@ -779,6 +779,48 @@
       "ticker": "META",
       "official_name": "Should I invest in Meta stock?",
       "cached_at": "2025-10-30T04:39:46.025370",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in meta": {
+      "ticker": "META",
+      "official_name": "Should I invest in META?",
+      "cached_at": "2025-10-30T05:41:39.224161",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in walmart stock": {
+      "ticker": "WMT",
+      "official_name": "Should I invest in Walmart stock?",
+      "cached_at": "2025-10-30T06:02:21.690047",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in wmt": {
+      "ticker": "WMT",
+      "official_name": "Should I invest in WMT?",
+      "cached_at": "2025-10-30T06:03:41.508644",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "jpmorgan": {
+      "ticker": "JPM",
+      "official_name": "JPMorgan",
+      "cached_at": "2025-10-30T06:21:57.532579",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in jpmorgan stock": {
+      "ticker": "JPM",
+      "official_name": "Should I invest in JPMorgan stock?",
+      "cached_at": "2025-10-30T06:21:58.768052",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in jpm": {
+      "ticker": "JPM",
+      "official_name": "Should I invest in JPM?",
+      "cached_at": "2025-10-30T06:22:51.296904",
       "ttl_days": 90,
       "source": "llm"
     }

@@ -23,24 +23,57 @@ Get a comprehensive report with:
 
 ## ⚡ Quick Start
 
-### 1. Setup
+### 1. Prerequisites
+- Python 3.11+
+- Node.js 18+
+- OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
+- MongoDB Atlas account ([Free M0 tier](https://www.mongodb.com/cloud/atlas/register))
+
+### 2. Setup
 ```bash
-# Clone and setup environment
-source .venv/bin/activate
+# Clone repository
+git clone <your-repo-url>
+cd PythonProject
+
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Configure API keys
-cp .env.template .env
-# Add your OpenAI API key and MongoDB URI
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
 ```
 
-### 2. Initialize Databases
+### 3. Configure Environment Variables
+
+**⚠️ SECURITY WARNING**: Never commit your `.env` file to Git!
+
+```bash
+# Copy template
+cp .env.template .env
+
+# Edit .env and add your credentials:
+# - OPENAI_API_KEY: Your OpenAI API key
+# - MONGODB_URI: Your MongoDB connection string
+```
+
+**Required Environment Variables:**
+- `OPENAI_API_KEY` - OpenAI API key for GPT-4o-mini and embeddings
+- `MONGODB_URI` - MongoDB connection string (e.g., mongodb://localhost:27017 or Atlas URI)
+- `MONGODB_DB_NAME` - Database name (default: investment_research)
+- `CHROMA_PERSIST_DIR` - Local directory for vector store (default: ./data/chroma)
+
+### 4. Initialize Databases
 ```bash
 python -m backend.scripts.init_db
 python -m backend.scripts.init_ticker_cache
 ```
 
-### 3. Run
+### 5. Run the Application
 ```bash
 # Backend (Terminal 1)
 uvicorn backend.main:app --reload --port 8000
@@ -127,9 +160,101 @@ curl -X POST http://localhost:8000/api/research/query \
 
 ---
 
+## 🔒 Security Best Practices
+
+**Important**: This application uses external APIs that require authentication.
+
+1. **Never commit sensitive data**:
+   - `.env` file is in `.gitignore` - keep it that way
+   - Never hardcode API keys in source code
+   - Revoke any accidentally exposed API keys immediately
+
+2. **API Key Management**:
+   - Store API keys in `.env` file only
+   - Use environment variables in production
+   - Rotate keys regularly
+
+3. **Cost Control**:
+   - OpenAI API costs ~$0.12 per report
+   - Set usage limits in OpenAI dashboard
+   - Monitor MongoDB Atlas usage (free tier: 512MB)
+
+4. **Data Privacy**:
+   - SEC EDGAR data is public
+   - Conversation history stored locally (24h TTL)
+   - No user data is transmitted externally except to configured APIs
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── backend/
+│   ├── agents/          # LangGraph multi-agent system
+│   ├── api/             # FastAPI REST endpoints
+│   ├── memory/          # MongoDB conversation memory
+│   ├── rag/             # RAG pipeline (EDGAR, news)
+│   ├── services/        # Yahoo Finance, ChromaDB
+│   └── config/          # Settings & environment config
+├── frontend/
+│   └── src/
+│       ├── components/  # React UI components
+│       ├── api/         # API client
+│       └── types/       # TypeScript definitions
+├── data/
+│   ├── chroma/          # Vector store (local)
+│   ├── edgar_filings/   # Downloaded SEC filings (not in git)
+│   └── ticker_cache.json # Ticker resolution cache
+└── tests/               # Test suite
+```
+
+---
+
+## 🎨 Features Showcase
+
+### Deep Analysis Mode
+- On-demand SEC 10-K filing analysis
+- Automatic download and vector embedding
+- Comprehensive business insights and risk analysis
+
+### Multi-Language Support
+- Automatic language detection (English/Chinese)
+- Bilingual UI and reports
+- Natural query understanding
+
+### Real-time Market Data
+- Yahoo Finance integration
+- 52-week price trends
+- Peer sector comparison
+- Analyst consensus ratings
+
+---
+
 ## 🤝 Contributing
 
-This is a personal project for investment research automation. For questions or suggestions, please open an issue.
+This is a personal portfolio project demonstrating:
+- Multi-agent AI systems with LangGraph
+- RAG pipeline implementation
+- Full-stack development (FastAPI + React)
+- Financial data integration
+
+For questions or suggestions, please open an issue.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **LangGraph & LangChain** - Multi-agent orchestration framework
+- **OpenAI** - GPT-4o-mini for analysis and embeddings
+- **Yahoo Finance** - Real-time market data
+- **SEC EDGAR** - Official company filings
 
 ---
 
