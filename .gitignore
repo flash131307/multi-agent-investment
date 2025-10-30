@@ -69,6 +69,7 @@ frontend/dist/
 
 # Temporary files
 *.png
+!assets/*.png
 PHASE_1-4_SOLUTION.md
 
 # Project documentation (internal use only)

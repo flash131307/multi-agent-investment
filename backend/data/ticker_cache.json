@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "last_updated": "2025-10-30T06:22:51.297053",
+    "last_updated": "2025-10-30T19:16:10.708575",
     "version": "1.0",
-    "total_entries": 117
+    "total_entries": 120
   },
   "companies": {
     "apple": {
@@ -821,6 +821,27 @@
       "ticker": "JPM",
       "official_name": "Should I invest in JPM?",
       "cached_at": "2025-10-30T06:22:51.296904",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the investment outlook for uber": {
+      "ticker": "UBER",
+      "official_name": "the investment outlook for Uber?",
+      "cached_at": "2025-10-30T18:18:03.584639",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "morgan stanley": {
+      "ticker": "MS",
+      "official_name": "Morgan Stanley",
+      "cached_at": "2025-10-30T19:16:07.835574",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "give me a detailed analysis of morgan stanley": {
+      "ticker": "MS",
+      "official_name": "Give me a detailed analysis of Morgan Stanley",
+      "cached_at": "2025-10-30T19:16:10.708495",
       "ttl_days": 90,
       "source": "llm"
     }
