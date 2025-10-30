@@ -10,36 +10,25 @@ AI-powered equity research platform that generates comprehensive investment repo
 ## Screenshot
 
 
-
-### 💡 Main Interface
-
 ![Main Interface](./assets/Screenshot1.png)
-
-### ⚙️ Multi-Agent Workflow in Action
-
-![Agent Workflow](./assets/Screenshot3.png)
-
-### 📊 AI-Generated Investment Report
-
-![AI Report Example](./assets/Screenshot4.png)
-
-### 📈 Interactive Financial Charts
-
-![Interactive Charts](./assets/Screenshot6.png)
-
-<details>
-<summary>📎 More Screenshots</summary>
-
-
-#### Peer Valuation Comparison
 
 ![Peer Valuation](./assets/Screenshot2.png)
 
-#### Detailed Report Example (Morgan Stanley)
+![Agent Workflow](./assets/Screenshot3.png)
+
+![AI Report Example](./assets/Screenshot4.png)
+
+
+
+<details>
+<summary>📎 More Screenshots(Interactive Charts)</summary>
 
 ![Detailed Report](./assets/Screenshot5.png)
 
+![Interactive Charts](./assets/Screenshot6.png)
+
 </details>
+
 
 
 
