@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "last_updated": "2025-10-28T02:54:02.104136",
+    "last_updated": "2025-10-29T22:43:37.334524",
     "version": "1.0",
-    "total_entries": 72
+    "total_entries": 95
   },
   "companies": {
     "apple": {
@@ -506,6 +506,167 @@
       "ticker": "AAPL",
       "official_name": "\u5206\u6790\u82f9\u679c\u516c\u53f8\u6700\u8fd1\u7684\u8868\u73b0\u548c\u4f30\u503c",
       "cached_at": "2025-10-28T02:54:02.103875",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u5fae\u8f6f\u7684\u6295\u8d44\u524d\u666f\u5982\u4f55": {
+      "ticker": "MSFT",
+      "official_name": "\u5fae\u8f6f\u7684\u6295\u8d44\u524d\u666f\u5982\u4f55\uff1f",
+      "cached_at": "2025-10-28T21:56:36.536144",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "apple stock price": {
+      "ticker": "AAPL",
+      "official_name": "Apple stock price?",
+      "cached_at": "2025-10-28T22:43:01.083037",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "what s the sentiment on tesla stock": {
+      "ticker": "TSLA",
+      "official_name": "What's the sentiment on Tesla stock?",
+      "cached_at": "2025-10-29T00:10:03.989782",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "apple p e ratio": {
+      "ticker": "AAPL",
+      "official_name": "Apple P/E ratio?",
+      "cached_at": "2025-10-29T00:10:21.236514",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "compare apple": {
+      "ticker": "AAPL",
+      "official_name": "Compare Apple",
+      "cached_at": "2025-10-29T00:10:40.376837",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u82f9\u679c\u80a1\u4ef7\u591a\u5c11": {
+      "ticker": "AAPL",
+      "official_name": "\u82f9\u679c\u80a1\u4ef7\u591a\u5c11\uff1f",
+      "cached_at": "2025-10-29T00:11:22.126360",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "microsoft stock analysis": {
+      "ticker": "MSFT",
+      "official_name": "Microsoft stock analysis?",
+      "cached_at": "2025-10-29T00:31:06.262666",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "tesla price": {
+      "ticker": "TSLA",
+      "official_name": "Tesla price?",
+      "cached_at": "2025-10-29T00:31:59.110990",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the sentiment on tesla": {
+      "ticker": "TSLA",
+      "official_name": "the sentiment on Tesla?",
+      "cached_at": "2025-10-29T00:47:44.299850",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in microsoft": {
+      "ticker": "MSFT",
+      "official_name": "Should I invest in Microsoft?",
+      "cached_at": "2025-10-29T00:48:17.530881",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "apple price": {
+      "ticker": "AAPL",
+      "official_name": "Apple price?",
+      "cached_at": "2025-10-29T00:51:50.137218",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "trading volume of googl": {
+      "ticker": "GOOGL",
+      "official_name": "trading volume of GOOGL?",
+      "cached_at": "2025-10-29T02:35:13.118466",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "can you summarize the current news sentiment around tsla": {
+      "ticker": "TSLA",
+      "official_name": "Can you summarize the current news sentiment around TSLA?",
+      "cached_at": "2025-10-29T02:36:32.677464",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "were the key points from aapl s q3 2024 earnings call": {
+      "ticker": "AAPL",
+      "official_name": "were the key points from AAPL's Q3 2024 earnings call?",
+      "cached_at": "2025-10-29T02:37:50.812179",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u8c37\u6b4c\u7684\u80a1\u4ef7\u600e\u4e48\u6837": {
+      "ticker": "GOOGL",
+      "official_name": "\u8c37\u6b4c\u7684\u80a1\u4ef7\u600e\u4e48\u6837",
+      "cached_at": "2025-10-29T03:00:21.931187",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the current price of aapl": {
+      "ticker": "AAPL",
+      "official_name": "the current price of AAPL?",
+      "cached_at": "2025-10-29T04:05:16.326911",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the sentiment for tesla stock": {
+      "ticker": "TSLA",
+      "official_name": "the sentiment for Tesla stock?",
+      "cached_at": "2025-10-29T04:05:41.584155",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in microsoft give me a full analysis": {
+      "ticker": "MSFT",
+      "official_name": "Should I invest in Microsoft? Give me a full analysis.",
+      "cached_at": "2025-10-29T04:06:01.395095",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "apple s price": {
+      "ticker": "AAPL",
+      "official_name": "Apple's price",
+      "cached_at": "2025-10-29T04:32:05.019453",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "microsoft sentiment": {
+      "ticker": "MSFT",
+      "official_name": "Microsoft sentiment",
+      "cached_at": "2025-10-29T04:33:53.438862",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "google s price": {
+      "ticker": "GOOGL",
+      "official_name": "Google's price",
+      "cached_at": "2025-10-29T04:42:54.977054",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u7ed9\u6211\u82f9\u679c\u516c\u53f8\u7684\u5b8c\u6574\u6295\u8d44\u62a5\u544a": {
+      "ticker": "AAPL",
+      "official_name": "\u7ed9\u6211\u82f9\u679c\u516c\u53f8\u7684\u5b8c\u6574\u6295\u8d44\u62a5\u544a",
+      "cached_at": "2025-10-29T22:42:35.601531",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u7279\u65af\u62c9\u6700\u8fd1\u7684\u5e02\u573a\u60c5\u7eea\u600e\u4e48\u6837": {
+      "ticker": "TSLA",
+      "official_name": "\u7279\u65af\u62c9\u6700\u8fd1\u7684\u5e02\u573a\u60c5\u7eea\u600e\u4e48\u6837\uff1f",
+      "cached_at": "2025-10-29T22:43:37.334210",
       "ttl_days": 90,
       "source": "llm"
     }

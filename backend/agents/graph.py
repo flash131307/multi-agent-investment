@@ -68,7 +68,10 @@ async def rag_retrieval(state: AgentState) -> AgentState:
 
     if not query:
         logger.warning("No query specified, skipping RAG retrieval")
-        return {"retrieved_context": []}
+        return {
+            "retrieved_context": [],
+            "executed_agents": ["rag_retrieval"]
+        }
 
     try:
         # Retrieve context with or without ticker
@@ -104,11 +107,22 @@ async def rag_retrieval(state: AgentState) -> AgentState:
         logger.info(f"Retrieved {len(retrieved)} context documents")
 
         # Return only the field we're updating (for parallel execution)
-        return {"retrieved_context": retrieved}
+        return {
+            "retrieved_context": retrieved,
+            "executed_agents": ["rag_retrieval"]
+        }
 
     except Exception as e:
         logger.error(f"RAG retrieval failed: {e}")
-        return {"retrieved_context": []}  # Return empty list on error
+        # Track error
+        agent_errors = state.get("agent_errors", {}).copy()
+        agent_errors["rag_retrieval"] = str(e)
+        return {
+            "retrieved_context": [],
+            "executed_agents": ["rag_retrieval"],
+            "agent_errors": agent_errors,
+            "errors": [f"rag_retrieval error: {str(e)}"]
+        }
 
 
 async def memory_saver(state: AgentState) -> AgentState:
@@ -165,41 +179,60 @@ def route_to_agents(state: AgentState) -> list[Send]:
     """
     sends = []
     sent_to = set()  # Track which agents we've already queued
+    tickers = state.get("tickers", [])
+    has_tickers = bool(tickers)
 
-    # Always retrieve context if enabled
-    if state.get("should_retrieve_context", True):
+    # Get explicit routing flags from router
+    should_fetch_market = state.get("should_fetch_market_data", False)
+    should_analyze_sentiment = state.get("should_analyze_sentiment", False)
+    should_retrieve_context = state.get("should_retrieve_context", False)
+
+    # 1. RAG retrieval - only if explicitly enabled by router
+    if should_retrieve_context:
         sends.append(Send("rag_retrieval", state))
         sent_to.add("rag_retrieval")
+        logger.debug("RAG retrieval: explicitly enabled by router")
+    elif not has_tickers:
+        # Fallback: if no tickers found, use RAG for semantic search
+        sends.append(Send("rag_retrieval", state))
+        sent_to.add("rag_retrieval")
+        logger.debug("RAG retrieval: fallback (no tickers found)")
 
-    # Fetch market data if needed and has tickers
-    if state.get("should_fetch_market_data", False) and state.get("tickers"):
-        if "market_data" not in sent_to:
-            sends.append(Send("market_data", state))
-            sent_to.add("market_data")
+    # 2. Market data agent - only if has tickers and router enabled
+    if should_fetch_market and has_tickers:
+        sends.append(Send("market_data", state))
+        sent_to.add("market_data")
+        logger.debug("Market data agent: enabled by router")
 
-    # Analyze sentiment if needed and has tickers
-    if state.get("should_analyze_sentiment", False) and state.get("tickers"):
-        if "sentiment" not in sent_to:
-            sends.append(Send("sentiment", state))
-            sent_to.add("sentiment")
+    # 3. Sentiment agent - only if has tickers and router enabled
+    if should_analyze_sentiment and has_tickers:
+        sends.append(Send("sentiment", state))
+        sent_to.add("sentiment")
+        logger.debug("Sentiment agent: enabled by router")
 
-    # Fetch analyst consensus if has tickers (always useful for forward-looking analysis)
-    if state.get("tickers"):
-        if "forward_looking" not in sent_to:
-            sends.append(Send("forward_looking", state))
-            sent_to.add("forward_looking")
+    # 4. Forward-looking agent - run if market data is being fetched
+    #    (needs market data for analyst consensus and forward guidance)
+    if should_fetch_market and has_tickers:
+        sends.append(Send("forward_looking", state))
+        sent_to.add("forward_looking")
+        logger.debug("Forward-looking agent: enabled (market data requested)")
 
     # NOTE: visualization is NOT in parallel execution
     # It runs after aggregator to access peer_valuation data from market_data_agent
 
-    # If no specific agents selected, default to market_data + sentiment (but only once each)
-    if state.get("tickers") and len(sent_to) <= 2:  # Only RAG + forward_looking or less
+    # Fallback: if router didn't enable any agents but we have tickers,
+    # default to comprehensive research (market + sentiment)
+    if has_tickers and not should_fetch_market and not should_analyze_sentiment:
+        logger.debug("No agents explicitly enabled, using fallback: market + sentiment")
         if "market_data" not in sent_to:
             sends.append(Send("market_data", state))
             sent_to.add("market_data")
         if "sentiment" not in sent_to:
             sends.append(Send("sentiment", state))
             sent_to.add("sentiment")
+        if "forward_looking" not in sent_to:
+            sends.append(Send("forward_looking", state))
+            sent_to.add("forward_looking")
 
     logger.info(f"Routing to {len(sent_to)} agents in parallel: {sent_to}")
 

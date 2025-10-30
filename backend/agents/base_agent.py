@@ -61,8 +61,14 @@ class BaseAgent(ABC):
             # Execute agent logic
             new_state = await self.execute(state)
 
+            # Track successful execution
             self.logger.info(f"✅ {self.name} agent completed successfully")
-            return new_state
+
+            # Add agent name to executed_agents list
+            return {
+                **new_state,
+                "executed_agents": [self.name]
+            }
 
         except Exception as e:
             # Handle errors gracefully
@@ -73,10 +79,15 @@ class BaseAgent(ABC):
             errors = state.get("errors", [])
             errors.append(error_msg)
 
-            # Return state with error
+            # Track failed execution in agent_errors dict
+            agent_errors = state.get("agent_errors", {}).copy()
+            agent_errors[self.name] = str(e)
+
+            # Return state with error (also add to executed_agents to show it ran)
             return {
-                **state,
                 "errors": errors,
+                "executed_agents": [self.name],
+                "agent_errors": agent_errors,
                 "retry_count": state.get("retry_count", 0) + 1
             }
 

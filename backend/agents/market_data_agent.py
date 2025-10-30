@@ -26,6 +26,8 @@ class MarketDataAgent(BaseAgent):
         """
         Fetch market data and peer valuation for all tickers in state.
 
+        ⚡ OPTIMIZED: Uses async methods and concurrent fetching for better performance.
+
         Args:
             state: Current agent state
 
@@ -38,7 +40,7 @@ class MarketDataAgent(BaseAgent):
             self.logger.warning("No tickers to fetch market data for")
             return state
 
-        # Fetch data for each ticker
+        # Fetch data for each ticker (concurrently if multiple tickers)
         market_data_list = []
         peer_valuation_list = []
 
@@ -46,14 +48,28 @@ class MarketDataAgent(BaseAgent):
             self.logger.info(f"Fetching market data for {ticker}")
 
             try:
-                # Fetch market data
-                data = self._fetch_ticker_data(ticker)
-                if data:
+                # ⚡ CONCURRENT FETCHING: market_data and peer_valuation in parallel
+                # This is a key optimization - instead of sequential:
+                #   data = await self._fetch_ticker_data_async(ticker)      # Wait
+                #   peer_data = await self._fetch_peer_valuation_async(ticker)  # Wait
+                # We do:
+                import asyncio
+                data, peer_data = await asyncio.gather(
+                    self._fetch_ticker_data_async(ticker),
+                    self._fetch_peer_valuation_async(ticker),
+                    return_exceptions=True
+                )
+
+                # Handle results
+                # Note: Cannot use isinstance() with TypedDict, check if it's a dict instead
+                if isinstance(data, Exception):
+                    self.logger.error(f"Market data error for {ticker}: {data}")
+                elif isinstance(data, dict) and data:
                     market_data_list.append(data)
 
-                # Fetch peer valuation comparison
-                peer_data = self._fetch_peer_valuation(ticker)
-                if peer_data:
+                if isinstance(peer_data, Exception):
+                    self.logger.error(f"Peer valuation error for {ticker}: {peer_data}")
+                elif isinstance(peer_data, dict) and peer_data:
                     peer_valuation_list.append(peer_data)
 
             except Exception as e:
@@ -161,6 +177,124 @@ class MarketDataAgent(BaseAgent):
         """
         # Get peer valuation from Yahoo Finance
         peer_data = self.yahoo.get_peer_valuation_comparison(ticker)
+
+        if not peer_data:
+            self.logger.warning(f"No peer valuation data available for {ticker}")
+            return None
+
+        # Convert to PeerValuation TypedDict
+        peer_valuation = PeerValuation(
+            ticker=peer_data.get("ticker"),
+            sector=peer_data.get("sector"),
+            industry=peer_data.get("industry"),
+            pe_ratio=peer_data.get("pe_ratio"),
+            price_to_book=peer_data.get("price_to_book"),
+            price_to_sales=peer_data.get("price_to_sales"),
+            sector_avg_pe=peer_data.get("sector_avg_pe"),
+            sector_avg_pb=peer_data.get("sector_avg_pb"),
+            sector_avg_ps=peer_data.get("sector_avg_ps"),
+            pe_premium_discount=peer_data.get("pe_premium_discount"),
+            pb_premium_discount=peer_data.get("pb_premium_discount"),
+            ps_premium_discount=peer_data.get("ps_premium_discount"),
+            peer_count=peer_data.get("peer_count", 0)
+        )
+
+        self.logger.info(
+            f"✅ {ticker}: Peer comparison vs {peer_valuation['sector']} "
+            f"(P/E: {peer_valuation['pe_premium_discount']:+.1f}% sector avg)"
+            if peer_valuation['pe_premium_discount'] else ""
+        )
+
+        return peer_valuation
+
+    # ========== ASYNC METHODS (Performance Optimized) ==========
+
+    async def _fetch_ticker_data_async(self, ticker: str) -> MarketData:
+        """
+        Async version of _fetch_ticker_data with caching.
+
+        Args:
+            ticker: Stock ticker symbol
+
+        Returns:
+            MarketData dict
+        """
+        # Get stock info from Yahoo Finance (async with caching)
+        stock_info = await self.yahoo.get_stock_info_async(ticker)
+
+        if not stock_info:
+            self.logger.warning(f"No data available for {ticker}")
+            return None
+
+        # Extract key fields
+        current_price = stock_info.get("current_price")
+
+        # Calculate change %
+        day_high = stock_info.get("52_week_high")
+        day_low = stock_info.get("52_week_low")
+
+        change_percent = None
+        if current_price and day_low and day_low > 0:
+            change_percent = ((current_price - day_low) / day_low) * 100
+
+        # Calculate 52-week trend metrics
+        week_52_high = stock_info.get("52_week_high")
+        week_52_low = stock_info.get("52_week_low")
+
+        week_52_position = None
+        distance_from_high = None
+        distance_from_low = None
+        trend_signal = None
+
+        if current_price and week_52_high and week_52_low and week_52_high > week_52_low:
+            week_52_position = ((current_price - week_52_low) / (week_52_high - week_52_low)) * 100
+            distance_from_high = ((current_price - week_52_high) / week_52_high) * 100
+            distance_from_low = ((current_price - week_52_low) / week_52_low) * 100
+
+            if week_52_position >= 80:
+                trend_signal = "near_high"
+            elif week_52_position <= 20:
+                trend_signal = "near_low"
+            else:
+                trend_signal = "mid_range"
+
+        # Create MarketData object
+        market_data = MarketData(
+            ticker=ticker,
+            current_price=current_price,
+            change_percent=round(change_percent, 2) if change_percent else None,
+            volume=stock_info.get("volume"),
+            market_cap=stock_info.get("market_cap"),
+            pe_ratio=stock_info.get("pe_ratio"),
+            day_high=stock_info.get("52_week_high"),
+            day_low=stock_info.get("52_week_low"),
+            year_high=week_52_high,
+            year_low=week_52_low,
+            week_52_position=round(week_52_position, 1) if week_52_position else None,
+            distance_from_high=round(distance_from_high, 1) if distance_from_high else None,
+            distance_from_low=round(distance_from_low, 1) if distance_from_low else None,
+            trend_signal=trend_signal
+        )
+
+        self.logger.info(
+            f"✅ {ticker}: ${current_price} "
+            f"(MC: ${market_data['market_cap']:,})" if market_data['market_cap'] else ""
+        )
+
+        return market_data
+
+    async def _fetch_peer_valuation_async(self, ticker: str) -> PeerValuation:
+        """
+        Async version of _fetch_peer_valuation with concurrent peer fetching and caching.
+
+        Args:
+            ticker: Stock ticker symbol
+
+        Returns:
+            PeerValuation dict
+        """
+        # Get peer valuation from Yahoo Finance (async with concurrent peer fetching)
+        peer_data = await self.yahoo.get_peer_valuation_comparison_async(ticker)
 
         if not peer_data:
             self.logger.warning(f"No peer valuation data available for {ticker}")

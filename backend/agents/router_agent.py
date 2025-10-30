@@ -145,41 +145,79 @@ class RouterAgent(BaseAgent):
         Returns:
             Tuple of (intent, fetch_market, analyze_sentiment, retrieve_context)
         """
-        prompt = f"""Analyze this investment research query and determine:
+        prompt = f"""Analyze this investment research query and determine the intent and required data sources.
 
-1. Primary intent (choose ONE):
-   - "price_query": User wants current price/market data
-   - "fundamental_analysis": User wants financial metrics, ratios, fundamentals
-   - "sentiment_analysis": User wants news and sentiment analysis
-   - "general_research": User wants comprehensive research report
-   - "comparison": User wants to compare multiple stocks
+## Intent Types & Flag Mapping
 
-2. What data to fetch:
-   - market_data: Should we fetch current price/fundamentals? (true/false)
-   - sentiment: Should we analyze news/sentiment? (true/false)
-   - context: Should we retrieve EDGAR/historical documents? (true/false)
+1. **price_query**: Current price or market data only
+   - Examples: "What's AAPL price?", "Show me Microsoft stock price", "苹果股价多少？"
+   - Flags: market_data=true, sentiment=false, context=false
+
+2. **fundamental_analysis**: Financial metrics, valuation, ratios
+   - Examples: "What's Tesla P/E ratio?", "Analyze Amazon fundamentals", "微软的财务指标如何？"
+   - Flags: market_data=true, sentiment=false, context=true
+
+3. **sentiment_analysis**: News, market sentiment, public opinion
+   - Examples: "What's the sentiment on Tesla?", "Recent news about Apple", "特斯拉的市场情绪如何？"
+   - Flags: market_data=false, sentiment=true, context=false
+
+4. **general_research**: Comprehensive investment analysis
+   - Examples: "Should I invest in Apple?", "Analyze Microsoft", "微软的投资前景如何？"
+   - Flags: market_data=true, sentiment=true, context=true
+
+5. **comparison**: Compare multiple stocks or sectors
+   - Examples: "Compare Tesla vs Ford", "Apple vs Microsoft", "比较特斯拉和传统汽车制造商"
+   - Flags: market_data=true, sentiment=false, context=true
+
+## Important Rules
+
+- **Only set flags to true if explicitly needed for the query**
+- If query only asks for price → DON'T enable sentiment or context
+- If query only asks for sentiment → DON'T enable market_data or context
+- If no tickers found → context should be true (for semantic search)
+- General/vague queries → use general_research with all flags true
+- Specific queries → use narrow intent with minimal flags
+
+## Negative Examples (What NOT to do)
+
+❌ Query: "What's AAPL price?" → DON'T set sentiment=true (not asked)
+❌ Query: "Show Tesla sentiment" → DON'T set market_data=true (not asked)
+❌ Query: "Compare stocks" → DON'T use general_research (use comparison)
+
+## User Query Analysis
 
 User query: "{query}"
 Tickers found: {tickers if tickers else "None"}
 
 Respond in JSON format:
 {{
-    "intent": "<intent_type>",
-    "fetch_market_data": <true/false>,
-    "analyze_sentiment": <true/false>,
-    "retrieve_context": <true/false>,
-    "reasoning": "<brief explanation>"
+    "intent": "<price_query|fundamental_analysis|sentiment_analysis|general_research|comparison>",
+    "fetch_market_data": <true|false>,
+    "analyze_sentiment": <true|false>,
+    "retrieve_context": <true|false>,
+    "reasoning": "<brief explanation of intent and flag choices>"
 }}"""
 
         try:
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are an expert at analyzing investment research queries. Always respond with valid JSON. Respond in the same language as the user's query (English or Chinese)."},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are an expert investment query analyzer. Your task is to:\n"
+                            "1. Identify the PRIMARY intent (choose the most specific one)\n"
+                            "2. Set flags to TRUE only if explicitly needed for that query\n"
+                            "3. Follow the examples and rules precisely\n"
+                            "4. Be conservative - when in doubt, set flags to FALSE\n"
+                            "5. Always respond with valid JSON\n"
+                            "6. Provide clear reasoning for your decisions"
+                        )
+                    },
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
-                max_tokens=200
+                temperature=0.2,  # Lower temperature for more consistent intent detection
+                max_tokens=250
             )
 
             # Parse JSON response
@@ -195,23 +233,68 @@ Respond in JSON format:
             result = json.loads(content)
 
             intent = result.get("intent", "general_research")
-            fetch_market = result.get("fetch_market_data", True)
-            analyze_sent = result.get("analyze_sentiment", True)
-            retrieve = result.get("retrieve_context", True)
 
+            # Explicit boolean parsing with fallback to defaults
+            # Handle both boolean and string responses from LLM
+            def parse_bool(value, default=False):
+                """Parse boolean value, handling strings and None."""
+                if value is None:
+                    return default
+                if isinstance(value, bool):
+                    return value
+                if isinstance(value, str):
+                    return value.lower() in ('true', '1', 'yes')
+                return bool(value)
+
+            fetch_market = parse_bool(result.get("fetch_market_data"), default=False)
+            analyze_sent = parse_bool(result.get("analyze_sentiment"), default=False)
+            retrieve = parse_bool(result.get("retrieve_context"), default=False)
+
+            reasoning = result.get('reasoning', 'N/A')
+
+            # Enhanced logging with flag details
             self.logger.info(
-                f"Intent analysis: {intent} | "
-                f"market={fetch_market}, sentiment={analyze_sent}, context={retrieve}"
+                f"🎯 Intent: {intent} | "
+                f"Flags: market_data={fetch_market}, sentiment={analyze_sent}, context={retrieve}"
             )
-            self.logger.debug(f"Reasoning: {result.get('reasoning', 'N/A')}")
+            self.logger.info(f"💡 Reasoning: {reasoning}")
+
+            # Log decision summary for analysis
+            flags_enabled = []
+            if fetch_market: flags_enabled.append("market_data")
+            if analyze_sent: flags_enabled.append("sentiment")
+            if retrieve: flags_enabled.append("context")
+
+            if not flags_enabled:
+                self.logger.warning(
+                    f"⚠️  No agents enabled for query: '{query[:50]}...' | "
+                    f"Intent: {intent} | Tickers: {tickers}"
+                )
+            else:
+                self.logger.debug(f"📊 Enabled agents: {', '.join(flags_enabled)}")
 
             return intent, fetch_market, analyze_sent, retrieve
 
         except Exception as e:
-            self.logger.error(f"Intent analysis failed: {e}, using defaults")
+            self.logger.error(f"❌ Intent analysis failed: {e}, using fallback strategy")
 
-            # Fallback: Conservative defaults
-            return "general_research", True, True, True
+            # Fallback strategy: Conservative approach
+            # If we have tickers, do comprehensive research
+            # If no tickers, rely on RAG for semantic search
+            has_tickers = bool(tickers)
+
+            if has_tickers:
+                self.logger.info(
+                    f"🔄 Fallback with tickers: general_research "
+                    f"(market=True, sentiment=True, context=True)"
+                )
+                return "general_research", True, True, True
+            else:
+                self.logger.info(
+                    f"🔄 Fallback without tickers: general_research "
+                    f"(market=False, sentiment=False, context=True)"
+                )
+                return "general_research", False, False, True
 
 
 # Singleton instance
