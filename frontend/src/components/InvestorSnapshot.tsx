@@ -24,8 +24,8 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
     if (change > 20) return { label: 'Strong Uptrend', color: 'text-success-400' };
     if (change > 5) return { label: 'Uptrend', color: 'text-success-500' };
     if (change > -5) return { label: 'Sideways', color: 'text-gray-400' };
-    if (change > -20) return { label: 'Downtrend', color: 'text-error-500' };
-    return { label: 'Strong Downtrend', color: 'text-error-400' };
+    if (change > -20) return { label: 'Downtrend', color: 'text-danger-500' };
+    return { label: 'Strong Downtrend', color: 'text-danger-400' };
   };
 
   const trend = getTrend();
@@ -67,7 +67,7 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
                 ${snapshot.current_price?.toFixed(2) || 'N/A'}
               </span>
               {snapshot.price_change_pct !== null && snapshot.price_change_pct !== undefined && (
-                <span className={`text-lg font-semibold ${snapshot.price_change_pct >= 0 ? 'text-success-400' : 'text-error-400'}`}>
+                <span className={`text-lg font-semibold ${snapshot.price_change_pct >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                   ({snapshot.price_change_pct >= 0 ? '+' : ''}{snapshot.price_change_pct.toFixed(2)}%)
                 </span>
               )}
@@ -111,14 +111,14 @@ export default function InvestorSnapshot({ snapshot }: InvestorSnapshotProps) {
         {/* Risk Warnings - Compact List */}
         {snapshot.risk_warnings && snapshot.risk_warnings.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-warning-400 flex items-center space-x-2 mb-3">
+            <h3 className="text-sm font-semibold text-danger-400 flex items-center space-x-2 mb-3">
               <AlertTriangle className="w-4 h-4" />
               <span>Risk Warnings</span>
             </h3>
             <ul className="space-y-2">
               {snapshot.risk_warnings.map((risk, index) => (
                 <li key={index} className="flex items-start space-x-2 text-sm">
-                  <span className="flex-shrink-0 text-warning-400 font-bold mt-0.5">{index + 1}.</span>
+                  <span className="flex-shrink-0 text-danger-400 font-bold mt-0.5">{index + 1}.</span>
                   <span className="text-gray-300">{risk}</span>
                 </li>
               ))}
