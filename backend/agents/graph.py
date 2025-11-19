@@ -114,13 +114,11 @@ async def rag_retrieval(state: AgentState) -> AgentState:
 
     except Exception as e:
         logger.error(f"RAG retrieval failed: {e}")
-        # Track error
-        agent_errors = state.get("agent_errors", {}).copy()
-        agent_errors["rag_retrieval"] = str(e)
+        # Track error (use dict for operator.or_ merging)
         return {
             "retrieved_context": [],
             "executed_agents": ["rag_retrieval"],
-            "agent_errors": agent_errors,
+            "agent_errors": {"rag_retrieval": str(e)},
             "errors": [f"rag_retrieval error: {str(e)}"]
         }
 

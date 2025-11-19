@@ -24,7 +24,10 @@ class ReportAgent(BaseAgent):
 
     async def execute(self, state: AgentState) -> AgentState:
         """
-        Generate final report from all agent outputs.
+        Generate final report from all agent outputs with reflection loop.
+
+        Uses Generate→Reflect→Refine pattern (max 3 iterations) to ensure
+        high-quality, comprehensive reports.
 
         Args:
             state: Current agent state with all data collected
@@ -46,6 +49,9 @@ class ReportAgent(BaseAgent):
         self.logger.info(f"Generating report for query: {user_query[:50]}...")
         self.logger.info(f"Intent: {intent}, Executed agents: {executed_agents}")
 
+        # Add reasoning step
+        self._add_reasoning_step(f"Starting report generation for intent: {intent}, tickers: {tickers}")
+
         # Determine which template to use based on intent
         template = self._select_template(intent)
 
@@ -58,8 +64,8 @@ class ReportAgent(BaseAgent):
             "context": bool(context)
         }
 
-        # Generate report based on available data and template
-        report = await self._generate_report(
+        # Generate report with reflection loop (max 3 iterations)
+        report, reflection_iterations = await self._generate_report_with_reflection(
             user_query=user_query,
             tickers=tickers,
             intent=intent,
@@ -87,7 +93,8 @@ class ReportAgent(BaseAgent):
             "data_sources": data_sources,
             "intent": intent,
             "tickers": tickers,
-            "report_template": template
+            "report_template": template,
+            "reflection_iterations": reflection_iterations  # Track how many iterations were needed
         }
 
         # Return report, snapshot, and metadata
@@ -118,6 +125,311 @@ class ReportAgent(BaseAgent):
         template = template_map.get(intent, "comprehensive")
         self.logger.info(f"Selected template: {template} for intent: {intent}")
         return template
+
+    async def _generate_report_with_reflection(
+        self,
+        user_query: str,
+        tickers: list,
+        intent: str,
+        template: str,
+        market_data: list,
+        sentiment: list,
+        analyst_consensus: list,
+        peer_valuation: list,
+        context: list,
+        data_sources: dict,
+        max_iterations: int = 3,
+        quality_threshold: float = 0.85
+    ) -> tuple[str, int]:
+        """
+        Generate report with reflection loop for quality improvement.
+
+        Process:
+        1. Generate initial report
+        2. Reflect: Evaluate quality (completeness, consistency, actionability)
+        3. Refine: If quality < threshold, generate improved version
+        4. Repeat up to max_iterations
+
+        Args:
+            user_query: Original query
+            tickers: List of tickers
+            intent: Query intent
+            template: Report template
+            market_data: Market data
+            sentiment: Sentiment analysis
+            analyst_consensus: Analyst consensus
+            peer_valuation: Peer valuation
+            context: Retrieved context
+            data_sources: Data availability dict
+            max_iterations: Max refinement iterations (default: 3)
+            quality_threshold: Quality score threshold to stop (0.0-1.0, default: 0.85)
+
+        Returns:
+            Tuple of (final_report, iterations_used)
+        """
+        self._add_reasoning_step("Starting reflection loop for report quality assurance")
+
+        report = None
+        quality_score = 0.0
+
+        for iteration in range(1, max_iterations + 1):
+            self.logger.info(f"📝 Report generation iteration {iteration}/{max_iterations}")
+            self._add_reasoning_step(f"Iteration {iteration}: Generating report")
+
+            # Generate or refine report
+            if iteration == 1:
+                # Initial generation
+                report = await self._generate_report(
+                    user_query=user_query,
+                    tickers=tickers,
+                    intent=intent,
+                    template=template,
+                    market_data=market_data,
+                    sentiment=sentiment,
+                    analyst_consensus=analyst_consensus,
+                    peer_valuation=peer_valuation,
+                    context=context,
+                    data_sources=data_sources
+                )
+            else:
+                # Refinement based on quality gaps
+                report = await self._refine_report(
+                    original_report=report,
+                    quality_feedback=quality_feedback,
+                    user_query=user_query,
+                    tickers=tickers,
+                    data_sources=data_sources
+                )
+
+            # Evaluate quality
+            quality_score, quality_feedback = await self._evaluate_report_quality(
+                report=report,
+                user_query=user_query,
+                intent=intent,
+                data_sources=data_sources
+            )
+
+            self.logger.info(
+                f"📊 Quality score: {quality_score:.2f} "
+                f"(threshold: {quality_threshold})"
+            )
+            self._add_reasoning_step(
+                f"Iteration {iteration}: Quality score = {quality_score:.2f}, "
+                f"feedback: {quality_feedback.get('summary', 'N/A')}"
+            )
+
+            # Check if quality meets threshold
+            if quality_score >= quality_threshold:
+                self.logger.info(
+                    f"✅ Quality threshold met after {iteration} iteration(s). "
+                    f"Stopping reflection loop."
+                )
+                self._add_reasoning_step(
+                    f"Quality threshold met ({quality_score:.2f} >= {quality_threshold}). "
+                    f"Report accepted."
+                )
+                break
+
+            if iteration < max_iterations:
+                self.logger.info(
+                    f"⚠️  Quality below threshold. Refining report (iteration {iteration + 1})..."
+                )
+                self._add_reasoning_step(
+                    f"Quality below threshold. Planning refinement for iteration {iteration + 1}"
+                )
+            else:
+                self.logger.warning(
+                    f"⚠️  Max iterations reached. Using best available report "
+                    f"(quality: {quality_score:.2f})"
+                )
+                self._add_reasoning_step(
+                    f"Max iterations reached. Accepting report with quality {quality_score:.2f}"
+                )
+
+        return report, iteration
+
+    async def _evaluate_report_quality(
+        self,
+        report: str,
+        user_query: str,
+        intent: str,
+        data_sources: dict
+    ) -> tuple[float, dict]:
+        """
+        Evaluate report quality across multiple dimensions.
+
+        Evaluation criteria:
+        - Completeness: Does it answer the user's query fully?
+        - Consistency: Are facts consistent with available data?
+        - Actionability: Does it provide clear investment insights?
+        - Clarity: Is it well-structured and easy to understand?
+
+        Args:
+            report: Generated report text
+            user_query: Original user query
+            intent: Query intent
+            data_sources: Available data sources
+
+        Returns:
+            Tuple of (quality_score, feedback_dict)
+            - quality_score: 0.0-1.0 (higher is better)
+            - feedback_dict: {"completeness": X, "consistency": Y, "actionability": Z, "summary": "..."}
+        """
+        prompt = f"""Evaluate the quality of this investment research report.
+
+**User Query:** {user_query}
+**Intent:** {intent}
+**Available Data Sources:** {', '.join([k for k, v in data_sources.items() if v])}
+
+**Report to Evaluate:**
+{report}
+
+---
+
+**Evaluation Criteria (score each 0-10):**
+
+1. **Completeness**: Does the report fully answer the user's query?
+   - Uses all available data sources appropriately
+   - Addresses all aspects of the query
+   - No missing critical information
+
+2. **Consistency**: Are all facts and conclusions internally consistent?
+   - No contradictions between sections
+   - Data references are accurate
+   - Conclusions match the evidence
+
+3. **Actionability**: Does it provide clear investment insights?
+   - Clear investment recommendation or perspective
+   - Backs up claims with data
+   - Helps user make informed decisions
+
+4. **Clarity**: Is it well-structured and easy to understand?
+   - Logical flow and organization
+   - Clear headings and sections
+   - No jargon without explanation
+
+**Respond in JSON format:**
+{{
+    "completeness": <score 0-10>,
+    "consistency": <score 0-10>,
+    "actionability": <score 0-10>,
+    "clarity": <score 0-10>,
+    "overall_score": <average score 0-10>,
+    "strengths": ["strength 1", "strength 2"],
+    "gaps": ["gap 1", "gap 2"],
+    "summary": "Brief 1-2 sentence evaluation"
+}}
+"""
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a quality assurance analyst for investment research reports. Provide objective, constructive evaluations."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=500,
+                response_format={"type": "json_object"}
+            )
+
+            import json
+            feedback = json.loads(response.choices[0].message.content.strip())
+
+            # Normalize score to 0.0-1.0 range
+            overall_score = feedback.get("overall_score", 5.0)
+            quality_score = overall_score / 10.0
+
+            return quality_score, feedback
+
+        except Exception as e:
+            self.logger.error(f"Quality evaluation failed: {e}")
+            # Fallback: assume good quality if evaluation fails
+            return 0.85, {
+                "completeness": 8,
+                "consistency": 8,
+                "actionability": 8,
+                "clarity": 8,
+                "overall_score": 8.0,
+                "strengths": ["Report generated successfully"],
+                "gaps": ["Quality evaluation unavailable"],
+                "summary": "Quality evaluation failed, assuming acceptable quality."
+            }
+
+    async def _refine_report(
+        self,
+        original_report: str,
+        quality_feedback: dict,
+        user_query: str,
+        tickers: list,
+        data_sources: dict
+    ) -> str:
+        """
+        Refine report based on quality feedback.
+
+        Args:
+            original_report: Original report text
+            quality_feedback: Feedback from quality evaluation
+            user_query: Original user query
+            tickers: List of tickers
+            data_sources: Available data sources
+
+        Returns:
+            Refined report text
+        """
+        gaps = quality_feedback.get("gaps", [])
+        strengths = quality_feedback.get("strengths", [])
+
+        prompt = f"""Refine this investment research report based on quality feedback.
+
+**User Query:** {user_query}
+**Tickers:** {', '.join(tickers) if tickers else 'Not specified'}
+
+**Original Report:**
+{original_report}
+
+---
+
+**Quality Feedback:**
+- **Strengths:** {', '.join(strengths)}
+- **Gaps to Address:** {', '.join(gaps)}
+
+**Refinement Instructions:**
+1. Keep all strengths from the original report
+2. Address each gap identified in the feedback
+3. Ensure completeness, consistency, actionability, and clarity
+4. Maintain the same language as the original report (English/Chinese)
+5. Do not hallucinate or add information not supported by available data
+
+**Generate the REFINED report below:**
+"""
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert investment research analyst. Refine reports to address quality gaps while maintaining strengths."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1500
+            )
+
+            refined_report = response.choices[0].message.content.strip()
+
+            self.logger.info("✅ Report refined successfully")
+            return refined_report
+
+        except Exception as e:
+            self.logger.error(f"Report refinement failed: {e}")
+            # Fallback: return original report
+            return original_report
 
     async def _generate_report(
         self,

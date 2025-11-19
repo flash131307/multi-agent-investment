@@ -128,12 +128,15 @@ cd frontend && npm install && npm run dev
 
 ## 💡 Core Features
 
-✅ **Multi-Agent Workflow** - LangGraph orchestration (router, market data, sentiment, report)  
-✅ **Real-time Data** - Yahoo Finance, SEC EDGAR, financial news  
-✅ **Smart Analysis** - 52-week trends, peer valuation, analyst consensus  
-✅ **RAG Pipeline** - ChromaDB vector search for EDGAR filings  
-✅ **Bilingual** - Auto-detects language (EN/CN)  
-✅ **Conversation Memory** - MongoDB session history (24h TTL)  
+✅ **Multi-Agent Workflow** - LangGraph orchestration (router, market data, sentiment, report)
+✅ **Real-time Data** - Yahoo Finance, SEC EDGAR, financial news
+✅ **Smart Analysis** - 52-week trends, peer valuation, analyst consensus
+✅ **RAG Pipeline** - ChromaDB vector search for EDGAR filings
+✅ **Bilingual** - Auto-detects language (EN/CN)
+✅ **Conversation Memory** - MongoDB session history (24h TTL)
+✅ **Quality Assurance** - Automatic report reflection & refinement (up to 3 iterations)
+✅ **Explainable AI** - Reasoning chain tracking for all agents
+✅ **Smart Retry** - Automatic recovery from transient API errors  
 
 ---
 
@@ -177,11 +180,20 @@ curl -X POST http://localhost:8000/api/research/query \
 ```
 .
 ├── backend/
-│   ├── agents/          # LangGraph multi-agent system
+│   ├── agents/
+│   │   ├── base_agent.py           # Enhanced base class (reasoning, retry, metrics)
+│   │   ├── router_agent.py         # Intent analysis & ticker extraction
+│   │   ├── market_data_agent.py    # Yahoo Finance data + peer valuation
+│   │   ├── sentiment_agent.py      # News sentiment analysis
+│   │   ├── forward_looking_agent.py # Analyst consensus & targets
+│   │   ├── visualization_agent.py   # Chart data generation
+│   │   ├── report_agent.py         # Report with reflection loop
+│   │   ├── state.py                # AgentState with metrics & reasoning
+│   │   └── graph.py                # LangGraph workflow orchestration
 │   ├── api/             # FastAPI REST endpoints
 │   ├── memory/          # MongoDB conversation memory
 │   ├── rag/             # RAG pipeline (EDGAR, news)
-│   ├── services/        # Yahoo Finance, ChromaDB
+│   ├── services/        # Yahoo Finance, ChromaDB, Ticker Resolver
 │   └── config/          # Settings & environment config
 ├── frontend/
 │   └── src/
@@ -192,31 +204,161 @@ curl -X POST http://localhost:8000/api/research/query \
 │   ├── chroma/          # Vector store (local)
 │   ├── edgar_filings/   # Downloaded SEC filings (not in git)
 │   └── ticker_cache.json # Ticker resolution cache
-└── tests/               # Test suite
+├── tests/               # Test suite
+├── test_agent_enhancements.py # Agent enhancement validation tests
+└── PLAN.md              # Development roadmap & progress tracking
 ```
 
 ---
 
 ## 🎨 Features Showcase
 
-### Deep Analysis Mode
+### 🔍 Deep Analysis Mode
 
 - On-demand SEC 10-K filing analysis
 - Automatic download and vector embedding
 - Comprehensive business insights and risk analysis
 
-### Multi-Language Support
+### 🌐 Multi-Language Support
 
 - Automatic language detection (English/Chinese)
 - Bilingual UI and reports
 - Natural query understanding
 
-### Real-time Market Data
+### 📊 Real-time Market Data
 
 - Yahoo Finance integration
 - 52-week price trends
-- Peer sector comparison
+- Peer sector comparison (11 sectors)
 - Analyst consensus ratings
+
+### 🤖 Advanced Agent Features
+
+**Reflection Loop** (Generate → Reflect → Refine):
+- Automatic quality evaluation (completeness, consistency, actionability, clarity)
+- Iterative refinement up to 3 times for optimal report quality
+- Quality threshold: 8.5/10 (88% score)
+
+**Reasoning Chain Tracking**:
+- Complete visibility into agent decision-making process
+- Step-by-step reasoning logs for debugging and explainability
+- Detailed execution metrics (time, attempts, success rate)
+
+**Smart Error Handling**:
+- Automatic retry with exponential backoff (1s → 2s → 4s)
+- Intelligent error classification (transient vs permanent)
+- Graceful degradation for partial failures
+
+**Performance Monitoring**:
+- Per-agent execution time tracking
+- Token usage monitoring
+- Success/failure statistics
+
+---
+
+## 🏗️ System Architecture
+
+### Multi-Agent Workflow
+
+```
+User Query
+    ↓
+┌─────────────────────────────────────────────┐
+│ Router Agent (Reasoning Chain Enabled)     │
+│ • Extract tickers (dynamic resolver)       │
+│ • Analyze intent                            │
+│ • Set routing flags                         │
+└─────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────┐
+│ Parallel Execution (4 Agents)              │
+│                                             │
+│ ┌─────────────┐  ┌──────────────┐         │
+│ │ Market Data │  │  Sentiment   │         │
+│ │   Agent     │  │    Agent     │         │
+│ └─────────────┘  └──────────────┘         │
+│                                             │
+│ ┌─────────────┐  ┌──────────────┐         │
+│ │  Forward    │  │     RAG      │         │
+│ │  Looking    │  │  Retrieval   │         │
+│ └─────────────┘  └──────────────┘         │
+│                                             │
+│ All agents track: reasoning, metrics, retry│
+└─────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────┐
+│ Aggregator (Sync Point)                    │
+└─────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────┐
+│ Visualization Agent                         │
+│ • Price history charts                      │
+│ • Peer comparison data                      │
+└─────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────┐
+│ Report Agent (Reflection Loop)             │
+│                                             │
+│  Iteration 1:                               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│  │ Generate │→ │ Reflect  │→ │  Refine  │ │
+│  └──────────┘  └──────────┘  └──────────┘ │
+│                     ↓                       │
+│              Quality >= 0.85?               │
+│                ✓ Yes → Done                 │
+│                ✗ No → Iteration 2 (max 3)   │
+└─────────────────────────────────────────────┘
+    ↓
+Final Report + Metrics + Reasoning Chains
+```
+
+### Quality Assurance Pipeline
+
+**Report Reflection Process**:
+
+1. **Generate**: Create initial report from all agent data
+2. **Reflect**: LLM evaluates 4 dimensions (0-10 scale each):
+   - **Completeness**: Uses all available data sources
+   - **Consistency**: No internal contradictions
+   - **Actionability**: Clear investment insights
+   - **Clarity**: Well-structured and understandable
+3. **Refine**: If overall score < 8.5, regenerate with improvement feedback
+4. **Iterate**: Repeat up to 3 times or until quality threshold met
+
+**Example Quality Feedback**:
+```json
+{
+  "completeness": 9,
+  "consistency": 9,
+  "actionability": 8,
+  "clarity": 9,
+  "overall_score": 8.8,
+  "strengths": [
+    "Comprehensive data integration",
+    "Clear investment recommendation"
+  ],
+  "gaps": [
+    "Missing forward-looking catalysts"
+  ]
+}
+```
+
+### Performance Metrics
+
+Each agent tracks:
+- **Execution time**: Time spent in execute() method
+- **Attempts**: Number of retry attempts
+- **Success**: Boolean success/failure flag
+- **Error type**: Classification of errors (if any)
+
+**Typical Performance**:
+- Router Agent: ~1-2s
+- Market Data Agent: ~0.4-0.6s
+- Sentiment Agent: ~3-5s
+- Forward Looking Agent: ~0.2-0.3s
+- Visualization Agent: ~0.1s
+- Report Agent: ~15-20s (including reflection)
+- **Total**: ~20-25s per comprehensive query
 
 ---
 

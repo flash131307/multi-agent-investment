@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "last_updated": "2025-10-30T19:16:10.708575",
+    "last_updated": "2025-11-19T04:29:37.176617",
     "version": "1.0",
-    "total_entries": 120
+    "total_entries": 130
   },
   "companies": {
     "apple": {
@@ -842,6 +842,76 @@
       "ticker": "MS",
       "official_name": "Give me a detailed analysis of Morgan Stanley",
       "cached_at": "2025-10-30T19:16:10.708495",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the price for microsoft": {
+      "ticker": "MSFT",
+      "official_name": "the price for Microsoft?",
+      "cached_at": "2025-11-04T02:58:00.378088",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "adobe": {
+      "ticker": "ADBE",
+      "official_name": "Adobe",
+      "cached_at": "2025-11-04T03:09:09.627888",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "the investment outlook for adobe": {
+      "ticker": "ADBE",
+      "official_name": "the investment outlook for Adobe?",
+      "cached_at": "2025-11-04T03:09:10.919524",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in aapl": {
+      "ticker": "AAPL",
+      "official_name": "Should I invest in AAPL?",
+      "cached_at": "2025-11-08T05:27:51.772546",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "aapl stock price": {
+      "ticker": "AAPL",
+      "official_name": "AAPL stock price",
+      "cached_at": "2025-11-08T05:28:48.319281",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "should i invest in msft": {
+      "ticker": "MSFT",
+      "official_name": "Should I invest in MSFT?",
+      "cached_at": "2025-11-08T06:38:45.054031",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "tell me about jp morgen": {
+      "ticker": "JPM",
+      "official_name": "tell me about JP morgen",
+      "cached_at": "2025-11-08T15:03:08.845037",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "analyze tesla s investment prospects": {
+      "ticker": "TSLA",
+      "official_name": "Analyze Tesla's investment prospects",
+      "cached_at": "2025-11-19T04:27:53.540010",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "\u5206\u6790\u82f9\u679c\u516c\u53f8\u7684\u6295\u8d44\u4ef7\u503c": {
+      "ticker": "AAPL",
+      "official_name": "\u5206\u6790\u82f9\u679c\u516c\u53f8\u7684\u6295\u8d44\u4ef7\u503c",
+      "cached_at": "2025-11-19T04:28:03.790173",
+      "ttl_days": 90,
+      "source": "llm"
+    },
+    "what s the current price of microsoft": {
+      "ticker": "MSFT",
+      "official_name": "What's the current price of Microsoft?",
+      "cached_at": "2025-11-19T04:29:37.176544",
       "ttl_days": 90,
       "source": "llm"
     }

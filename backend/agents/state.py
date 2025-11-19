@@ -170,7 +170,9 @@ class AgentState(TypedDict):
 
     # Execution tracking
     executed_agents: Annotated[List[str], operator.add]  # Track which agents ran
-    agent_errors: Dict[str, str]  # Track agent-specific errors {agent_name: error_message}
+    agent_errors: Annotated[Dict[str, str], operator.or_]  # Track agent-specific errors {agent_name: error_message}
+    agent_metrics: Annotated[Dict[str, Dict[str, Any]], operator.or_]  # Agent performance metrics {agent_name: {execution_time, tokens, etc.}}
+    reasoning_chains: Annotated[Dict[str, List[str]], operator.or_]  # Agent reasoning steps {agent_name: [step1, step2, ...]}
 
     # Agent outputs (can be set by parallel agents - use Annotated to merge lists)
     market_data: Annotated[List[MarketData], operator.add]
@@ -227,6 +229,8 @@ def create_initial_state(
         # Execution tracking
         executed_agents=[],
         agent_errors={},
+        agent_metrics={},
+        reasoning_chains={},
 
         # Agent outputs (initially empty lists for parallel merge)
         market_data=[],
