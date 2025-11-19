@@ -128,14 +128,14 @@ cd frontend && npm install && npm run dev
 
 ## 💡 Core Features
 
-✅ **Multi-Agent Workflow** - LangGraph orchestration (router, market data, sentiment, report)
-✅ **Real-time Data** - Yahoo Finance, SEC EDGAR, financial news
-✅ **Smart Analysis** - 52-week trends, peer valuation, analyst consensus
-✅ **RAG Pipeline** - ChromaDB vector search for EDGAR filings
-✅ **Bilingual** - Auto-detects language (EN/CN)
-✅ **Conversation Memory** - MongoDB session history (24h TTL)
-✅ **Quality Assurance** - Automatic report reflection & refinement (up to 3 iterations)
-✅ **Explainable AI** - Reasoning chain tracking for all agents
+✅ **Multi-Agent Workflow** - LangGraph orchestration (router, market data, sentiment, report)  
+✅ **Real-time Data** - Yahoo Finance, SEC EDGAR, financial news  
+✅ **Smart Analysis** - 52-week trends, peer valuation, analyst consensus  
+✅ **RAG Pipeline** - ChromaDB vector search for EDGAR filings  
+✅ **Bilingual** - Auto-detects language (EN/CN)  
+✅ **Conversation Memory** - MongoDB session history (24h TTL)  
+✅ **Quality Assurance** - Automatic report reflection & refinement (up to 3 iterations)  
+✅ **Explainable AI** - Reasoning chain tracking for all agents  
 ✅ **Smart Retry** - Automatic recovery from transient API errors  
 
 ---
@@ -181,15 +181,6 @@ curl -X POST http://localhost:8000/api/research/query \
 .
 ├── backend/
 │   ├── agents/
-│   │   ├── base_agent.py           # Enhanced base class (reasoning, retry, metrics)
-│   │   ├── router_agent.py         # Intent analysis & ticker extraction
-│   │   ├── market_data_agent.py    # Yahoo Finance data + peer valuation
-│   │   ├── sentiment_agent.py      # News sentiment analysis
-│   │   ├── forward_looking_agent.py # Analyst consensus & targets
-│   │   ├── visualization_agent.py   # Chart data generation
-│   │   ├── report_agent.py         # Report with reflection loop
-│   │   ├── state.py                # AgentState with metrics & reasoning
-│   │   └── graph.py                # LangGraph workflow orchestration
 │   ├── api/             # FastAPI REST endpoints
 │   ├── memory/          # MongoDB conversation memory
 │   ├── rag/             # RAG pipeline (EDGAR, news)
@@ -205,7 +196,6 @@ curl -X POST http://localhost:8000/api/research/query \
 │   ├── edgar_filings/   # Downloaded SEC filings (not in git)
 │   └── ticker_cache.json # Ticker resolution cache
 ├── tests/               # Test suite
-├── test_agent_enhancements.py # Agent enhancement validation tests
 └── PLAN.md              # Development roadmap & progress tracking
 ```
 
@@ -343,22 +333,7 @@ Final Report + Metrics + Reasoning Chains
 }
 ```
 
-### Performance Metrics
 
-Each agent tracks:
-- **Execution time**: Time spent in execute() method
-- **Attempts**: Number of retry attempts
-- **Success**: Boolean success/failure flag
-- **Error type**: Classification of errors (if any)
-
-**Typical Performance**:
-- Router Agent: ~1-2s
-- Market Data Agent: ~0.4-0.6s
-- Sentiment Agent: ~3-5s
-- Forward Looking Agent: ~0.2-0.3s
-- Visualization Agent: ~0.1s
-- Report Agent: ~15-20s (including reflection)
-- **Total**: ~20-25s per comprehensive query
 
 ---
 
