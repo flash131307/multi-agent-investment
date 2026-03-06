@@ -1,3 +1,10 @@
+# Planning / design docs (root level only)
+/findings.md
+/progress.md
+/raw_plan.md
+/task_plan.md
+/多智能体投资研究系统.md
+
 # Python
 __pycache__/
 *.py[cod]
