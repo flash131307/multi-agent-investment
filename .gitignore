@@ -58,9 +58,9 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
-test_*.py
-check_settings.py
-diagnose_openai.py
+/test_*.py
+/check_settings.py
+/diagnose_openai.py
 
 # Frontend
 frontend/node_modules/

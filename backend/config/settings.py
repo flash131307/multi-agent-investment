@@ -9,39 +9,37 @@ from typing import Optional
 class Settings(BaseSettings):
     """Application configuration settings."""
 
-    # MongoDB Configuration (Free M0 tier)
-    mongodb_uri: str
-    mongodb_db_name: str = "investment_research"
-
-    # ChromaDB Configuration (local vector database)
-    chroma_persist_dir: str = "./data/chroma"
-    chroma_collection_name: str = "investment_docs"
-
-    # API Keys
+    # OpenAI
     openai_api_key: str
     openai_model: str = "gpt-4o"
     openai_embedding_model: str = "text-embedding-3-small"
-    news_api_key: Optional[str] = None
-    yahoo_finance_api_key: Optional[str] = None
 
-    # SEC EDGAR Configuration
-    sec_edgar_user_agent: str
+    # Finnhub (News)
+    finnhub_api_key: Optional[str] = None
+
+    # Qdrant (Vector Store)
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_collection_name: str = "investment_docs"
+    qdrant_api_key: Optional[str] = None
+
+    # FinBERT (Local Models)
+    finbert_model_name: str = "ProsusAI/finbert"
+    finbert_embedding_model: str = "ProsusAI/finbert"
+    finbert_device: str = "cpu"
+
+    # SEC EDGAR
+    sec_edgar_user_agent: str = "InvestmentResearch research@example.com"
+
+    # Agent Timeouts (seconds)
+    agent_timeout_technical: int = 30
+    agent_timeout_sentiment: int = 20
+    agent_timeout_fundamental: int = 60
 
     # Application Settings
     environment: str = "development"
     log_level: str = "INFO"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-
-    # Session Management
-    session_expire_minutes: int = 30
-    session_secret_key: str
-
-    # WebSocket Settings
-    ws_heartbeat_interval: int = 30
-
-    # Alert System
-    alert_check_interval: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",
