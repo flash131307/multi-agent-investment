@@ -1,350 +1,166 @@
-"""
-Vector store integration with ChromaDB for RAG pipeline.
-Handles storage and retrieval of embedded documents.
-"""
-from typing import List, Dict, Any, Optional
-import logging
-from datetime import datetime
-import hashlib
+"""Qdrant-based vector store for the fundamental RAG pipeline."""
 
-from backend.services.chroma_client import chroma_db
+import logging
+import uuid as _uuid
 
 logger = logging.getLogger(__name__)
 
 
-class DocumentVectorStore:
-    """Manages document storage and retrieval in ChromaDB."""
+class QdrantVectorStore:
+    """
+    Thin wrapper around qdrant_client for storing and searching document embeddings.
+    Supports in-memory mode (url=":memory:") and remote Qdrant instances.
 
-    def __init__(self):
-        """Initialize vector store."""
-        self.chroma = chroma_db
+    Raises:
+        ImportError: If qdrant_client is not installed.
+    """
 
-    def _generate_id(self, text: str, metadata: Dict) -> str:
-        """
-        Generate unique ID for a document chunk.
-
-        Args:
-            text: Chunk text
-            metadata: Chunk metadata
-
-        Returns:
-            Unique ID string
-        """
-        # Create ID from ticker, source, and text hash
-        ticker = metadata.get("ticker", "UNKNOWN")
-        source = metadata.get("source", "unknown")
-        doc_type = metadata.get("doc_type", "")
-
-        # Use full text + metadata for hash to ensure uniqueness
-        # Include chunk_index and news_index if available to differentiate chunks
-        chunk_index = metadata.get("chunk_index", "")
-        news_index = metadata.get("news_index", "")
-
-        # Create unique string from text and all metadata
-        unique_string = f"{ticker}_{source}_{doc_type}_{chunk_index}_{news_index}_{text}"
-        text_hash = hashlib.md5(unique_string.encode()).hexdigest()[:16]
-
-        # Format: TICKER_SOURCE_DOCTYPE_HASH
-        id_parts = [ticker, source, doc_type, text_hash]
-        doc_id = "_".join(p for p in id_parts if p)
-
-        return doc_id
-
-    async def store_document_chunks(
+    def __init__(
         self,
-        chunks: List[Dict[str, Any]]
-    ) -> int:
+        url: str = ":memory:",
+        collection_name: str = "investment_docs",
+        api_key: str | None = None,
+    ) -> None:
+        try:
+            from qdrant_client import QdrantClient  # type: ignore
+        except ImportError as exc:
+            raise ImportError(
+                "qdrant_client is required for QdrantVectorStore. "
+                "Install it with: pip install qdrant-client"
+            ) from exc
+
+        self.collection_name = collection_name
+        self._collection_created = False
+
+        if url == ":memory:":
+            self._client = QdrantClient(location=":memory:")
+        else:
+            init_kwargs: dict = {"url": url}
+            if api_key:
+                init_kwargs["api_key"] = api_key
+            self._client = QdrantClient(**init_kwargs)
+
+    def _ensure_collection(self, dim: int) -> None:
+        """Create the collection if it does not yet exist."""
+        if self._collection_created:
+            return
+
+        from qdrant_client.models import Distance, VectorParams  # type: ignore
+
+        existing = {c.name for c in self._client.get_collections().collections}
+        if self.collection_name not in existing:
+            self._client.create_collection(
+                collection_name=self.collection_name,
+                vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
+            )
+            logger.info(
+                "Created Qdrant collection '%s' (dim=%d)", self.collection_name, dim
+            )
+        self._collection_created = True
+
+    def upsert(self, chunks: list[dict], embeddings: list[list[float]]) -> int:
         """
-        Store document chunks with embeddings in ChromaDB.
+        Upsert document chunks with their embeddings.
 
         Args:
-            chunks: List of dicts with 'text', 'metadata', and 'embedding' keys
+            chunks: List of dicts with "text" and "metadata" keys.
+            embeddings: Parallel list of float vectors.
 
         Returns:
-            Number of chunks stored
+            Number of points upserted.
         """
-        if not chunks:
-            logger.warning("No chunks to store")
+        if not chunks or not embeddings:
             return 0
 
-        try:
-            # Generate IDs
-            ids = [self._generate_id(chunk["text"], chunk["metadata"]) for chunk in chunks]
-
-            # Extract components
-            documents = [chunk["text"] for chunk in chunks]
-            embeddings = [chunk["embedding"] for chunk in chunks]
-            metadatas = [chunk["metadata"] for chunk in chunks]
-
-            # Store in ChromaDB
-            self.chroma.add_documents(
-                ids=ids,
-                documents=documents,
-                embeddings=embeddings,
-                metadatas=metadatas
+        if len(chunks) != len(embeddings):
+            raise ValueError(
+                f"chunks ({len(chunks)}) and embeddings ({len(embeddings)}) "
+                "must be the same length"
             )
 
-            logger.info(f"✅ Stored {len(chunks)} chunks in vector store")
-            return len(chunks)
+        dim = len(embeddings[0])
+        self._ensure_collection(dim)
 
-        except Exception as e:
-            logger.error(f"❌ Failed to store chunks: {e}")
-            raise
+        from qdrant_client.models import PointStruct  # type: ignore
 
-    async def search_similar(
+        points = [
+            PointStruct(
+                id=str(_uuid.uuid4()),
+                vector=embedding,
+                payload={
+                    "text": chunk.get("text", ""),
+                    "metadata": chunk.get("metadata", {}),
+                },
+            )
+            for chunk, embedding in zip(chunks, embeddings)
+        ]
+
+        self._client.upsert(collection_name=self.collection_name, points=points)
+        logger.debug("Upserted %d points into '%s'", len(points), self.collection_name)
+        return len(points)
+
+    def search(
         self,
-        query_embedding: List[float],
+        query_embedding: list[float],
         top_k: int = 5,
-        filters: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        metadata_filter: dict | None = None,
+    ) -> list[dict]:
         """
-        Search for similar documents using vector similarity.
-
-        Args:
-            query_embedding: Query vector
-            top_k: Number of results to return
-            filters: Metadata filters (e.g., {"ticker": "AAPL"})
+        Nearest-neighbour search.
 
         Returns:
-            ChromaDB query results
+            List of dicts: {"text": str, "metadata": dict, "score": float}
         """
+        if not self._collection_created:
+            return []
+
         try:
-            results = self.chroma.query(
-                query_embeddings=[query_embedding],
-                n_results=top_k,
-                where=filters
-            )
+            from qdrant_client.models import Filter, FieldCondition, MatchValue  # type: ignore
 
-            logger.info(f"✅ Found {len(results['documents'][0]) if results['documents'] else 0} similar documents")
-            return results
-
-        except Exception as e:
-            logger.error(f"❌ Vector search failed: {e}")
-            raise
-
-    async def search_by_ticker(
-        self,
-        ticker: str,
-        query_embedding: List[float],
-        top_k: int = 5
-    ) -> List[Dict[str, Any]]:
-        """
-        Search documents for a specific ticker.
-
-        Args:
-            ticker: Stock ticker
-            query_embedding: Query vector
-            top_k: Number of results
-
-        Returns:
-            List of matching documents with metadata
-        """
-        results = await self.search_similar(
-            query_embedding=query_embedding,
-            top_k=top_k,
-            filters={"ticker": ticker.upper()}
-        )
-
-        return self._format_results(results)
-
-    async def search_by_date_range(
-        self,
-        start_date: str,
-        end_date: str,
-        query_embedding: List[float],
-        top_k: int = 5
-    ) -> List[Dict[str, Any]]:
-        """
-        Search documents within a date range.
-
-        Args:
-            start_date: Start date (ISO format)
-            end_date: End date (ISO format)
-            query_embedding: Query vector
-            top_k: Number of results
-
-        Returns:
-            List of matching documents
-        """
-        # Note: ChromaDB metadata filters are exact match, not range
-        # For date ranges, we'll fetch more results and filter in Python
-        results = await self.search_similar(
-            query_embedding=query_embedding,
-            top_k=top_k * 3  # Fetch more to filter
-        )
-
-        # Filter by date range
-        filtered = self._filter_by_date_range(results, start_date, end_date)
-        return filtered[:top_k]
-
-    async def search_by_source(
-        self,
-        source: str,
-        query_embedding: List[float],
-        top_k: int = 5
-    ) -> List[Dict[str, Any]]:
-        """
-        Search documents from a specific source.
-
-        Args:
-            source: Source type ("edgar", "news", "yfinance")
-            query_embedding: Query vector
-            top_k: Number of results
-
-        Returns:
-            List of matching documents
-        """
-        results = await self.search_similar(
-            query_embedding=query_embedding,
-            top_k=top_k,
-            filters={"source": source}
-        )
-
-        return self._format_results(results)
-
-    async def hybrid_search(
-        self,
-        query_embedding: List[float],
-        ticker: Optional[str] = None,
-        source: Optional[str] = None,
-        doc_type: Optional[str] = None,
-        top_k: int = 5
-    ) -> List[Dict[str, Any]]:
-        """
-        Hybrid search combining vector similarity and metadata filters.
-
-        Args:
-            query_embedding: Query vector
-            ticker: Filter by ticker (optional)
-            source: Filter by source (optional)
-            doc_type: Filter by document type (optional)
-            top_k: Number of results
-
-        Returns:
-            List of matching documents
-        """
-        # Build metadata filter with proper ChromaDB syntax
-        filter_conditions = []
-        if ticker:
-            filter_conditions.append({"ticker": ticker.upper()})
-        if source:
-            filter_conditions.append({"source": source})
-        if doc_type:
-            filter_conditions.append({"doc_type": doc_type})
-
-        # ChromaDB requires $and for multiple conditions
-        if len(filter_conditions) > 1:
-            filters = {"$and": filter_conditions}
-        elif len(filter_conditions) == 1:
-            filters = filter_conditions[0]
-        else:
-            filters = None
-
-        results = await self.search_similar(
-            query_embedding=query_embedding,
-            top_k=top_k,
-            filters=filters
-        )
-
-        return self._format_results(results)
-
-    def _format_results(self, chroma_results: Dict) -> List[Dict[str, Any]]:
-        """
-        Format ChromaDB results into a cleaner structure.
-
-        Args:
-            chroma_results: Raw ChromaDB query results
-
-        Returns:
-            List of formatted result dicts
-        """
-        formatted = []
-
-        if not chroma_results.get("documents") or not chroma_results["documents"][0]:
-            return formatted
-
-        # ChromaDB returns results nested in arrays
-        documents = chroma_results["documents"][0]
-        metadatas = chroma_results.get("metadatas", [[]])[0]
-        distances = chroma_results.get("distances", [[]])[0]
-        ids = chroma_results.get("ids", [[]])[0]
-
-        for i in range(len(documents)):
-            formatted.append({
-                "id": ids[i] if i < len(ids) else None,
-                "text": documents[i],
-                "metadata": metadatas[i] if i < len(metadatas) else {},
-                "distance": distances[i] if i < len(distances) else None,
-                "similarity": 1 - distances[i] if i < len(distances) else None  # Convert distance to similarity
-            })
-
-        return formatted
-
-    def _filter_by_date_range(
-        self,
-        results: Dict,
-        start_date: str,
-        end_date: str
-    ) -> List[Dict[str, Any]]:
-        """Filter results by date range."""
-        formatted = self._format_results(results)
-
-        filtered = []
-        for doc in formatted:
-            doc_date = doc["metadata"].get("date", "")
-            if start_date <= doc_date <= end_date:
-                filtered.append(doc)
-
-        return filtered
-
-    async def get_document_count(
-        self,
-        ticker: Optional[str] = None,
-        source: Optional[str] = None
-    ) -> int:
-        """
-        Get count of documents in the store.
-
-        Args:
-            ticker: Filter by ticker (optional)
-            source: Filter by source (optional)
-
-        Returns:
-            Document count
-        """
-        if not ticker and not source:
-            return self.chroma.count()
-
-        # For filtered counts, we need to query and count
-        # ChromaDB requires $and operator for multiple filters
-        if ticker and source:
-            filters = {
-                "$and": [
-                    {"ticker": ticker.upper()},
-                    {"source": source}
+            query_filter = None
+            if metadata_filter:
+                conditions = [
+                    FieldCondition(key=f"metadata.{k}", match=MatchValue(value=v))
+                    for k, v in metadata_filter.items()
                 ]
-            }
-        elif ticker:
-            filters = {"ticker": ticker.upper()}
-        else:
-            filters = {"source": source}
+                query_filter = Filter(must=conditions)
 
+            results = self._client.search(
+                collection_name=self.collection_name,
+                query_vector=query_embedding,
+                limit=top_k,
+                query_filter=query_filter,
+            )
+        except Exception as exc:
+            logger.error("Qdrant search failed: %s", exc)
+            return []
+
+        return [
+            {
+                "text": hit.payload.get("text", ""),
+                "metadata": hit.payload.get("metadata", {}),
+                "score": float(hit.score),
+            }
+            for hit in results
+        ]
+
+    def count(self) -> int:
+        """Return number of points in the collection."""
+        if not self._collection_created:
+            return 0
         try:
-            results = self.chroma.get(where=filters, limit=10000)
-            return len(results.get("ids", []))
-        except Exception as e:
-            logger.error(f"❌ Failed to get document count: {e}")
+            return self._client.count(collection_name=self.collection_name).count
+        except Exception as exc:
+            logger.error("Qdrant count failed: %s", exc)
             return 0
 
-    async def delete_by_ticker(self, ticker: str):
-        """Delete all documents for a ticker."""
+    def delete_collection(self) -> None:
+        """Drop the collection (useful for test cleanup)."""
         try:
-            self.chroma.delete(where={"ticker": ticker.upper()})
-            logger.info(f"✅ Deleted documents for {ticker}")
-        except Exception as e:
-            logger.error(f"❌ Failed to delete documents for {ticker}: {e}")
-            raise
-
-
-# Singleton instance
-vector_store = DocumentVectorStore()
+            self._client.delete_collection(collection_name=self.collection_name)
+            self._collection_created = False
+            logger.info("Deleted Qdrant collection '%s'", self.collection_name)
+        except Exception as exc:
+            logger.warning(
+                "Could not delete collection '%s': %s", self.collection_name, exc
+            )
