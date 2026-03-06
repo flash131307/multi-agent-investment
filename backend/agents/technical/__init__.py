@@ -1,0 +1,3 @@
+"""
+Technical analysis sub-package.
+"""

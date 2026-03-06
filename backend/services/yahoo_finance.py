@@ -3,7 +3,8 @@ Yahoo Finance API integration for stock data.
 Uses yfinance library for free access to market data.
 """
 import yfinance as yf
-from typing import Dict, Optional, List
+import pandas as pd
+from typing import Dict, Optional, List, Tuple
 from datetime import datetime, timedelta
 import logging
 import asyncio
@@ -11,6 +12,74 @@ from functools import lru_cache
 import time
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Module-level simple dict cache for get_technical_data (5-minute TTL)
+# ---------------------------------------------------------------------------
+_technical_data_cache: Dict[str, Tuple[pd.DataFrame, float]] = {}
+_TECHNICAL_CACHE_TTL = 300  # seconds
+_TECHNICAL_MIN_ROWS = 60
+
+
+def get_technical_data(ticker: str, period: str = "1y") -> pd.DataFrame:
+    """
+    Download OHLCV data for the given ticker using yfinance.
+
+    Caches results for 5 minutes (module-level dict cache).
+
+    Args:
+        ticker: Stock ticker symbol (e.g. "AAPL").
+        period: yfinance period string (default "1y").
+
+    Returns:
+        DataFrame with columns: Open, High, Low, Close, Volume.
+        Index is a DatetimeIndex.
+
+    Raises:
+        ValueError: If ticker is not found, data is empty, or fewer than 60 rows returned.
+    """
+    cache_key = f"{ticker.upper()}:{period}"
+    now = time.time()
+
+    # Check cache
+    if cache_key in _technical_data_cache:
+        cached_df, cached_ts = _technical_data_cache[cache_key]
+        if now - cached_ts < _TECHNICAL_CACHE_TTL:
+            logger.debug("Cache hit for get_technical_data: %s", cache_key)
+            return cached_df
+
+    # Fetch from yfinance
+    try:
+        raw = yf.download(ticker, period=period, progress=False, auto_adjust=True)
+    except Exception as exc:
+        raise ValueError(f"yfinance download failed for '{ticker}': {exc}") from exc
+
+    if raw is None or raw.empty:
+        raise ValueError(f"No data returned by yfinance for ticker '{ticker}'.")
+
+    # Normalise column names (yfinance may return MultiIndex in some versions)
+    if isinstance(raw.columns, pd.MultiIndex):
+        raw.columns = raw.columns.get_level_values(0)
+
+    required = {"Open", "High", "Low", "Close", "Volume"}
+    missing = required - set(raw.columns)
+    if missing:
+        raise ValueError(
+            f"yfinance data for '{ticker}' is missing columns: {missing}"
+        )
+
+    df = raw[["Open", "High", "Low", "Close", "Volume"]].copy()
+
+    if len(df) < _TECHNICAL_MIN_ROWS:
+        raise ValueError(
+            f"Insufficient data for '{ticker}': need at least {_TECHNICAL_MIN_ROWS} rows, "
+            f"got {len(df)}."
+        )
+
+    # Store in cache
+    _technical_data_cache[cache_key] = (df, now)
+    logger.info("Fetched %d rows of OHLCV data for %s (period=%s)", len(df), ticker, period)
+    return df
 
 
 class YahooFinanceService:
