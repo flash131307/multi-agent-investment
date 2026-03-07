@@ -3,6 +3,7 @@ Step 3 of Plan-and-Solve: execute each AnalysisTask and produce SubConclusions.
 """
 import json
 import logging
+import re
 from typing import Any, TYPE_CHECKING
 
 from backend.models.fundamental import AnalysisTask, SubConclusion
@@ -19,6 +20,13 @@ try:
     from openai import OpenAI  # type: ignore
 except ImportError:
     OpenAI = None  # type: ignore
+
+def _strip_json_fences(raw: str) -> str:
+    """Strip markdown code fences that GPT-4o sometimes wraps around JSON."""
+    raw = raw.strip()
+    match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw)
+    return match.group(1) if match else raw
+
 
 _MAX_SUPPLEMENTARY_ROUNDS = 2
 _CONFIDENCE_THRESHOLD = 0.5
@@ -146,7 +154,7 @@ def _call_llm(
         )
 
         raw = response.choices[0].message.content or ""
-        data = json.loads(raw)
+        data = json.loads(_strip_json_fences(raw))
 
         return SubConclusion(
             task_id=str(data.get("task_id", task.task_id)),

@@ -4,6 +4,7 @@ Falls back to default tasks when LLM is unavailable.
 """
 import json
 import logging
+import re
 from typing import Any
 
 from backend.models.fundamental import AnalysisTask, CompanyProfile
@@ -37,6 +38,13 @@ _DEFAULT_TASKS: list[dict[str, Any]] = [
         "weight": 0.25,
     },
 ]
+
+
+def _strip_json_fences(raw: str) -> str:
+    """Strip markdown code fences that GPT-4o sometimes wraps around JSON."""
+    raw = raw.strip()
+    match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw)
+    return match.group(1) if match else raw
 
 
 def generate_tasks(
@@ -110,7 +118,7 @@ def _try_llm_generate(
         )
 
         raw = response.choices[0].message.content or ""
-        tasks = json.loads(raw)
+        tasks = json.loads(_strip_json_fences(raw))
 
         if not isinstance(tasks, list):
             logger.warning("LLM returned non-list response; using defaults.")
