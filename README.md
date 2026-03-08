@@ -215,6 +215,35 @@ tests/
 
 ---
 
+## Appendix: Previous Version UI
+
+The original system used a **chat-style research query interface** — users typed free-form questions, a Router Agent extracted tickers, and the system returned a long-form markdown report with embedded charts. This version was refactored into the current 3-agent + Decision Hub architecture to achieve deterministic, auditable decisions.
+
+<details>
+<summary>Click to view pre-refactor screenshots (6 images)</summary>
+
+**Home — Research Query Interface**
+![Home page](assets/Screenshot1.png)
+
+**Analysis in Progress — Parallel Agent Execution**
+![Loading screen](assets/Screenshot2.png)
+
+**Results — Simple View (Investor Snapshot)**
+![Simple view](assets/Screenshot3.png)
+
+**Results — Detailed View (Full Research Report)**
+![Detailed view](assets/Screenshot4.png)
+
+**Interactive Charts — Price Trend**
+![Price trend chart](assets/Screenshot5.png)
+
+**Interactive Charts — Peer Valuation Comparison**
+![Peer valuation chart](assets/Screenshot6.png)
+
+</details>
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
