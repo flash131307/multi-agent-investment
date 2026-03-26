@@ -1,4 +1,4 @@
-"""News sentiment agent models."""
+"""News and public sentiment models."""
 
 from datetime import datetime
 from enum import Enum
@@ -10,6 +10,39 @@ class SentimentLabel(str, Enum):
     POSITIVE = "positive"
     NEGATIVE = "negative"
     NEUTRAL = "neutral"
+
+
+class SourceAlignment(str, Enum):
+    """How aligned public sentiment sources are for a ticker."""
+
+    SINGLE_SOURCE = "single_source"
+    ALIGNED = "aligned"
+    MIXED = "mixed"
+    DIVERGENT = "divergent"
+
+
+class PublicSentimentSource(BaseModel, frozen=True):
+    """Structured social/public sentiment for a single upstream source."""
+
+    source: str
+    buzz_score: float = Field(..., ge=0.0, le=100.0)
+    bullish_pct: float = Field(..., ge=0.0, le=100.0)
+    trend: str | None = None
+    mentions: int | None = Field(default=None, ge=0)
+    trade_count: int | None = Field(default=None, ge=0)
+
+
+class PublicSentimentSnapshot(BaseModel, frozen=True):
+    """Aggregated public sentiment snapshot across social/public sources."""
+
+    ticker: str
+    days_back: int = Field(..., ge=1, le=90)
+    sources: list[PublicSentimentSource] = Field(default_factory=list)
+    average_buzz: float = Field(..., ge=0.0, le=100.0)
+    average_bullish_pct: float = Field(..., ge=0.0, le=100.0)
+    coverage_factor: float = Field(..., ge=0.0, le=1.0)
+    alignment_factor: float = Field(..., ge=0.0, le=1.0)
+    source_alignment: SourceAlignment
 
 
 class NewsArticle(BaseModel, frozen=True):
@@ -42,3 +75,8 @@ class AggregationResult(BaseModel, frozen=True):
     article_count: int = Field(..., ge=0)
     consistency_factor: float = Field(..., ge=0.0, le=1.0)
     coverage_factor: float = Field(..., ge=0.0, le=1.0)
+    public_sentiment_used: bool = False
+    public_sentiment_mode: str | None = None
+    public_average_buzz: float | None = Field(default=None, ge=0.0, le=100.0)
+    public_average_bullish_pct: float | None = Field(default=None, ge=0.0, le=100.0)
+    public_source_alignment: SourceAlignment | None = None

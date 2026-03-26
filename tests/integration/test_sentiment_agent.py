@@ -7,7 +7,13 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
-from backend.models.sentiment import NewsArticle, SentimentLabel
+from backend.models.sentiment import (
+    NewsArticle,
+    PublicSentimentSnapshot,
+    PublicSentimentSource,
+    SentimentLabel,
+    SourceAlignment,
+)
 from backend.models.signals import AgentSignal, Direction
 from backend.agents.sentiment.agent import SentimentAgent
 
@@ -44,6 +50,49 @@ def _positive_articles(ticker: str, count: int = 5) -> list[dict]:
     ]
 
 
+def _public_snapshot(
+    ticker: str,
+    *,
+    average_buzz: float = 82.0,
+    average_bullish_pct: float = 68.0,
+    coverage_factor: float = 1.0,
+    alignment_factor: float = 1.0,
+    source_alignment: SourceAlignment = SourceAlignment.ALIGNED,
+) -> PublicSentimentSnapshot:
+    return PublicSentimentSnapshot(
+        ticker=ticker,
+        days_back=7,
+        sources=[
+            PublicSentimentSource(
+                source="reddit",
+                buzz_score=80.0,
+                bullish_pct=64.0,
+                trend="rising",
+                mentions=420,
+            ),
+            PublicSentimentSource(
+                source="x",
+                buzz_score=84.0,
+                bullish_pct=72.0,
+                trend="rising",
+                mentions=1100,
+            ),
+            PublicSentimentSource(
+                source="polymarket",
+                buzz_score=82.0,
+                bullish_pct=68.0,
+                trend="stable",
+                trade_count=500,
+            ),
+        ],
+        average_buzz=average_buzz,
+        average_bullish_pct=average_bullish_pct,
+        coverage_factor=coverage_factor,
+        alignment_factor=alignment_factor,
+        source_alignment=source_alignment,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Full pipeline integration test
 # ---------------------------------------------------------------------------
@@ -67,6 +116,10 @@ class TestSentimentAgentFullPipeline:
             patch(
                 "backend.agents.sentiment.agent.fetch_news",
                 return_value=articles,
+            ),
+            patch(
+                "backend.agents.sentiment.agent.fetch_public_sentiment",
+                return_value=None,
             ),
             patch(
                 "backend.agents.sentiment.agent.get_finbert_service",
@@ -101,6 +154,10 @@ class TestSentimentAgentFullPipeline:
                 return_value=articles,
             ),
             patch(
+                "backend.agents.sentiment.agent.fetch_public_sentiment",
+                return_value=None,
+            ),
+            patch(
                 "backend.agents.sentiment.agent.get_finbert_service",
                 return_value=mock_finbert,
             ),
@@ -128,6 +185,10 @@ class TestSentimentAgentEmptyNews:
                 return_value=[],
             ),
             patch(
+                "backend.agents.sentiment.agent.fetch_public_sentiment",
+                return_value=None,
+            ),
+            patch(
                 "backend.agents.sentiment.agent.get_finbert_service",
                 return_value=mock_finbert,
             ),
@@ -146,6 +207,7 @@ class TestSentimentAgentEmptyNews:
 
         with (
             patch("backend.agents.sentiment.agent.fetch_news", return_value=[]),
+            patch("backend.agents.sentiment.agent.fetch_public_sentiment", return_value=None),
             patch("backend.agents.sentiment.agent.get_finbert_service", return_value=mock_finbert),
         ):
             agent = SentimentAgent(timeout=10.0)
@@ -212,6 +274,10 @@ class TestSentimentAgentMixedNews:
                 return_value=articles,
             ),
             patch(
+                "backend.agents.sentiment.agent.fetch_public_sentiment",
+                return_value=None,
+            ),
+            patch(
                 "backend.agents.sentiment.agent.get_finbert_service",
                 return_value=mock_finbert,
             ),
@@ -222,6 +288,58 @@ class TestSentimentAgentMixedNews:
         assert signal is not None
         assert isinstance(signal, AgentSignal)
         assert signal.agent_name == "sentiment"
+
+    @pytest.mark.asyncio
+    async def test_public_sentiment_can_drive_signal_when_no_news_is_available(self):
+        ticker = "NVDA"
+        mock_finbert = MagicMock()
+        mock_finbert.is_available.return_value = True
+
+        with (
+            patch("backend.agents.sentiment.agent.fetch_news", return_value=[]),
+            patch(
+                "backend.agents.sentiment.agent.fetch_public_sentiment",
+                return_value=_public_snapshot(ticker, average_buzz=84.0, average_bullish_pct=74.0),
+            ),
+            patch("backend.agents.sentiment.agent.get_finbert_service", return_value=mock_finbert),
+        ):
+            agent = SentimentAgent(timeout=10.0)
+            signal = await agent.run(ticker)
+
+        assert signal is not None
+        assert signal.direction == Direction.BUY
+        assert "Public sentiment" in signal.reasoning
+
+    @pytest.mark.asyncio
+    async def test_public_sentiment_is_additive_but_does_not_override_strong_news_signal(self):
+        ticker = "AAPL"
+        articles = _convert_raw_to_articles(_positive_articles(ticker, count=8))
+
+        mock_finbert = MagicMock()
+        mock_finbert.is_available.return_value = True
+        mock_finbert.classify.return_value = [
+            (SentimentLabel.POSITIVE, 0.92) for _ in range(len(articles))
+        ]
+
+        with (
+            patch("backend.agents.sentiment.agent.fetch_news", return_value=articles),
+            patch(
+                "backend.agents.sentiment.agent.fetch_public_sentiment",
+                return_value=_public_snapshot(
+                    ticker,
+                    average_buzz=88.0,
+                    average_bullish_pct=22.0,
+                    alignment_factor=0.8,
+                    source_alignment=SourceAlignment.MIXED,
+                ),
+            ),
+            patch("backend.agents.sentiment.agent.get_finbert_service", return_value=mock_finbert),
+        ):
+            agent = SentimentAgent(timeout=10.0)
+            signal = await agent.run(ticker)
+
+        assert signal is not None
+        assert signal.direction == Direction.BUY
 
 
 # ---------------------------------------------------------------------------

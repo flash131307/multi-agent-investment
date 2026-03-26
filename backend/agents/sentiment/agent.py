@@ -9,6 +9,7 @@ from backend.models.signals import AgentSignal, Direction, Strength
 from backend.services.finbert_service import get_finbert_service
 
 from .news_fetcher import fetch_news
+from .public_fetcher import fetch_public_sentiment
 from .filter import filter_articles
 from .classifier import classify_articles
 from .aggregator import aggregate_sentiments, to_agent_signal
@@ -53,24 +54,37 @@ class SentimentAgent(BaseAgent):
                 "cannot run SentimentAgent."
             )
 
-        # Layer 0 — Fetch raw articles
+        # Layer 0 — Fetch raw articles + optional public sentiment snapshot
         articles = fetch_news(ticker)
+        public_sentiment = fetch_public_sentiment(ticker)
         logger.info("Fetched %d articles for %s", len(articles), ticker)
+        if public_sentiment is not None:
+            logger.info(
+                "Fetched public sentiment for %s from %d source(s).",
+                ticker,
+                len(public_sentiment.sources),
+            )
 
         # Layer 1 — Filter
         filtered = filter_articles(articles, ticker)
         logger.info("After filtering: %d articles for %s", len(filtered), ticker)
 
-        if not filtered:
+        if not filtered and public_sentiment is None:
             logger.info("No articles after filtering for %s; returning fallback.", ticker)
             return _FALLBACK_SIGNAL
 
         # Layer 2 — Classify
-        classified = classify_articles(filtered, finbert)
+        classified = classify_articles(filtered, finbert) if filtered else []
         logger.info("Classified %d articles for %s", len(classified), ticker)
 
-        # Layer 3 — Aggregate → Signal
-        result = aggregate_sentiments(classified)
+        # Layer 3 — Aggregate → Signal with optional public sentiment prior
+        result = aggregate_sentiments(classified, public_sentiment=public_sentiment)
+        if not classified and not result.public_sentiment_used:
+            logger.info(
+                "No usable public sentiment for %s after empty-news path; returning fallback.",
+                ticker,
+            )
+            return _FALLBACK_SIGNAL
         signal = to_agent_signal(result)
 
         logger.info(
