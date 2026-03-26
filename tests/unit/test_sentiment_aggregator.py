@@ -11,7 +11,10 @@ from backend.models.sentiment import (
     AggregationResult,
     ArticleSentiment,
     NewsArticle,
+    PublicSentimentSnapshot,
+    PublicSentimentSource,
     SentimentLabel,
+    SourceAlignment,
 )
 from backend.models.signals import Direction, Strength
 from backend.agents.sentiment.aggregator import aggregate_sentiments, to_agent_signal
@@ -55,6 +58,48 @@ def _make_classified(
     )
 
 
+def _make_public_snapshot(
+    *,
+    average_buzz: float = 82.0,
+    average_bullish_pct: float = 68.0,
+    coverage_factor: float = 1.0,
+    alignment_factor: float = 1.0,
+    source_alignment: SourceAlignment = SourceAlignment.ALIGNED,
+) -> PublicSentimentSnapshot:
+    return PublicSentimentSnapshot(
+        ticker="TSLA",
+        days_back=7,
+        sources=[
+            PublicSentimentSource(
+                source="reddit",
+                buzz_score=80.0,
+                bullish_pct=64.0,
+                trend="rising",
+                mentions=500,
+            ),
+            PublicSentimentSource(
+                source="x",
+                buzz_score=84.0,
+                bullish_pct=72.0,
+                trend="rising",
+                mentions=2400,
+            ),
+            PublicSentimentSource(
+                source="polymarket",
+                buzz_score=82.0,
+                bullish_pct=68.0,
+                trend="stable",
+                trade_count=900,
+            ),
+        ],
+        average_buzz=average_buzz,
+        average_bullish_pct=average_bullish_pct,
+        coverage_factor=coverage_factor,
+        alignment_factor=alignment_factor,
+        source_alignment=source_alignment,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Empty input
 # ---------------------------------------------------------------------------
@@ -73,6 +118,13 @@ class TestAggregateEmpty:
         signal = to_agent_signal(result)
         assert signal.direction == Direction.NEUTRAL
         assert signal.strength == Strength.WEAK
+
+    def test_empty_list_can_fallback_to_public_sentiment(self):
+        result = aggregate_sentiments([], public_sentiment=_make_public_snapshot())
+        signal = to_agent_signal(result)
+        assert result.public_sentiment_used is True
+        assert result.public_sentiment_mode == "fallback"
+        assert signal.direction == Direction.BUY
 
 
 # ---------------------------------------------------------------------------
@@ -197,6 +249,28 @@ class TestScenario4LowCoverage:
         # With only 2 articles and mixed sentiment, final confidence should be low
         # (but note to_agent_signal clamps to [0.1, 0.95])
         assert result.confidence < 0.5
+
+
+class TestPublicSentimentBlend:
+    def test_public_sentiment_is_additive_not_dominant(self):
+        classified = [
+            _make_classified(SentimentLabel.POSITIVE, confidence=0.9, days_ago=0)
+            for _ in range(6)
+        ]
+        snapshot = _make_public_snapshot(
+            average_buzz=88.0,
+            average_bullish_pct=24.0,
+            alignment_factor=0.8,
+            source_alignment=SourceAlignment.MIXED,
+        )
+
+        result = aggregate_sentiments(classified, public_sentiment=snapshot)
+        signal = to_agent_signal(result)
+
+        assert result.public_sentiment_used is True
+        assert result.public_sentiment_mode == "blended"
+        assert signal.direction == Direction.BUY
+        assert result.public_average_buzz == 88.0
 
 
 # ---------------------------------------------------------------------------

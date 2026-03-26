@@ -76,6 +76,8 @@ Typical analysis completes in **2–4 steps, ~1.8s per ticker**.
 
 A **zero-LLM pipeline** that processes financial news through three layers: relevance filtering with deduplication, FinBERT batch classification (~0.3s for 25 articles on CPU), and weighted aggregation with exponential time decay and source credibility scoring. The funnel narrows ~50 raw articles down to a single signal.
 
+When `ADANOS_API_KEY` is configured, the sentiment agent can also blend in a small **public sentiment prior** from Reddit, X, and Polymarket. This does not replace the news pipeline — it only adds deterministic context around social attention, bullish breadth, and cross-source alignment.
+
 ### Fundamental Agent — Plan-and-Solve + RAG
 
 A 4-step structured pipeline: **profile** the company, **plan** analysis tasks, **execute** via RAG retrieval on SEC 10-K filings + financial data tools, then **synthesize** with cross-task consistency checking. The RAG pipeline uses hybrid retrieval (dense + BM25) with Reciprocal Rank Fusion, achieving **0.82 recall@5** on structured financial documents.
@@ -146,7 +148,7 @@ pip install -r requirements.txt
 cd frontend && npm install && cd ..
 
 # Configure
-cp .env.template .env   # Fill in OPENAI_API_KEY, FINNHUB_API_KEY
+cp .env.template .env   # Fill in OPENAI_API_KEY, FINNHUB_API_KEY (ADANOS_API_KEY optional)
 
 # Run
 uvicorn backend.main:app --reload --port 8000   # Terminal 1

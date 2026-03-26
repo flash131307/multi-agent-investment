@@ -16,6 +16,9 @@ class Settings(BaseSettings):
 
     # Finnhub (News)
     finnhub_api_key: Optional[str] = None
+    adanos_api_key: Optional[str] = None
+    adanos_base_url: str = "https://api.adanos.org"
+    adanos_timeout_seconds: float = 4.0
 
     # Qdrant (Vector Store)
     qdrant_url: str = "http://localhost:6333"
